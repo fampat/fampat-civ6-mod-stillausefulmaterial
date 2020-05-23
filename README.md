@@ -9,20 +9,25 @@ After a certain amount of iron, niter or horses has been accumulated you will be
 to boost production, science and culture.
 
 The amount of boots are only minor but steady, depending on your income of strategic resources.
+At the moment every AI civ is also boosting up to once per turn.
 
 [b]Boostable Resources[/b]
-- Iron
+[u]Iron[/u]
 Minimal amount for boosting is 25, can be used on the production-panel to boost the current
 production of a city. Only usable once per turn. The entire iron will be used if possible.
 
 If a production gets completed, only the iron for completing it will be consumed.
 You need to be in the renaissance era to be able to use the iron boost.
 
-- Niter
+[u]Niter[/u]
 Currently in development.
 
-- Horses
+[u]Horses[/u]
 Currently in development.
+
+[b]Upcoming[/b]
+- Implementation of niter and horse boosts.
+- Adding deeper decision-logic for AI boosting.
 
 [b]Known issues[/b]
 - Currently iam testing all this.
