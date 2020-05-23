@@ -71,23 +71,30 @@ end
 
 -- Attach our button to the production-panel, where it resides
 function attachMaterialBoostBotton()
-  CreateMaterialBoostButton();
+  if selectedCity ~= nil then
+    local localPlayer = Players[Game.GetLocalPlayer()];
 
-  -- Within the top-stack, top-stack for a top-buton :)
-  local currentTopStack = ContextPtr:LookUpControl("/InGame/ProductionPanel/TopStack");
+    -- If is possible to attach, we will see
+    if isBoostWithIronPossible(localPlayer) or boostedThisTurn then
+      CreateMaterialBoostButton();
 
-  -- Top-stack isnt just a myth?
-	if currentTopStack ~= nil then
-    -- We parented it :)
-		Controls.IronProductionBoostStack:ChangeParent(currentTopStack);
+      -- Within the top-stack, top-stack for a top-buton :)
+      local currentTopStack = ContextPtr:LookUpControl("/InGame/ProductionPanel/TopStack");
 
-    -- We are now an official child
-    currentTopStack:AddChildAtIndex(Controls.IronProductionBoostStack, 1);
-		currentTopStack:CalculateSize();
-		currentTopStack:ReprocessAnchoring();
+      -- Top-stack isnt just a myth?
+    	if currentTopStack ~= nil then
+        -- We parented it :)
+    		Controls.IronProductionBoostStack:ChangeParent(currentTopStack);
 
-    -- What happened?
-    WriteToLog("Attached material boost button");
+        -- We are now an official child
+        currentTopStack:AddChildAtIndex(Controls.IronProductionBoostStack, 1);
+    		currentTopStack:CalculateSize();
+    		currentTopStack:ReprocessAnchoring();
+
+        -- What happened?
+        WriteToLog("Attached material boost button");
+    	end
+  	end
 	end
 end
 
@@ -101,7 +108,7 @@ end
 function isBoostWithIronPossible(player)
   -- He need to be in the right era!
   if hasRequiredEra(player) then
-    local playerResources:table = player:GetResources();
+    local playerResources = player:GetResources();
 
     -- He wil need iron to make it work!
     for resource in GameInfo.Resources() do
@@ -241,11 +248,8 @@ function OnProductionPanelListModeChanged(listMode)
         local localPlayerID = Game.GetLocalPlayer();
         local localPlayer = Players[localPlayerID];
 
-        -- ...and we are allowed to boost...
-        if isBoostWithIronPossible(localPlayer) or boostedThisTurn then
-          -- ...attach our boost-button
-          attachMaterialBoostBotton();
-        end
+        -- Attach our boost-button
+        attachMaterialBoostBotton();
       end
     else
       WriteToLog("Hide the boost button (no production-tab selected)!");
