@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Context ID="NiterMaterial" >
+
+  <Stack ID="IronProductionBoostStack" Hidden="0" Anchor="C,B" StackGrowth="Right" Padding="2" ConsumeMouse="1" />
+
+  <Instance Name="IronProductionBoostInstance" >
+    <GridButton ID="IronProductionBoostButton" Size="342,46" Anchor="C,C" Texture="QueueSlot_Button" SliceCorner="20,23" SliceSize="2,2" SliceTextureSize="42,48" StateOffsetIncrement="0,48">
+      <Image ID="IronProductionBoostIcon" size="40,40" Offset="-40,0" Anchor="C,C"/>
+      <Image ID="IronProductionBoostArrow" Anchor="C,C" Texture="Controls_ArrowButtonRight" Size="19,23" Alpha="0.5"/>
+      <Label ID="IronProductionBoostGear" String="[ICON_ProductionLarge]" TextAnchor="C,C" Style="FontNormal16" Size="36,36" Anchor="C,C" Offset="40,0"/>
+    </GridButton>
+  </Instance>
+</Context>

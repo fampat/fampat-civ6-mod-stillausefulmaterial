@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameData>
+  <BaseGameText>
+    <!-- ENGLISH -->
+
+    <!-- Production panel -->
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP">
+  		<Text>Use up to all of your iron for spare-parts and alloys to boost or finish this production.</Text>
+  	</Row>
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_IRON_BOOSTED_TOOLTIP">
+  		<Text>You already have boosted a production on this turn.</Text>
+  	</Row>
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_NO_PRODUCTION_TOOPTIP">
+  		<Text>No production to boost right now.</Text>
+  	</Row>
+  </BaseGameText>
+</GameData>

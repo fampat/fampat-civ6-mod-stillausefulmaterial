@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameData>
+  <LocalizedText>
+    <!-- GERMAN -->
+
+    <!-- Production panel -->
+  	<Replace Tag="LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP" Language="de_DE">
+  		<Text>Den Eisenvorrat für Ersatzteile und Legierungen nutzen um diese Produktion zu beschleunigen oder fertigzustellen.</Text>
+  	</Replace>
+  	<Replace Tag="LOC_STILLAUSEFULMATERIAL_IRON_BOOSTED_TOOLTIP" Language="de_DE">
+  		<Text>Es wurde bereits eine Produktion in dieser Runde beschleunigt.</Text>
+  	</Replace>
+  	<Replace Tag="LOC_STILLAUSEFULMATERIAL_NO_PRODUCTION_TOOPTIP" Language="de_DE">
+  		<Text>Derzeit gibt es keine Produktion die beschleunigt werden könnte.</Text>
+  	</Replace>
+  </LocalizedText>
+</GameData>

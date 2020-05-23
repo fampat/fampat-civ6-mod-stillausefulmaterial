@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Mod id="7483f288-221c-42fa-a757-0bcf89bca2b1" version="0.3">
+  <Properties>
+    <Name>Still A Useful Material [BETA]</Name>
+    <Teaser>Adds in a use for iron, horses (TODO) and niter (TODO) on later game-eras. Gathering-Storm ONLY!</Teaser>
+    <Description>Adds the option to use iron as a production booster whilst niter can be used to boost science. Horses make a great cultural good. Gathering-Storm ONLY!</Description>
+    <Authors>Fampat</Authors>
+    <EnabledByDefault>1</EnabledByDefault>
+    <DisabledAtStartup>0</DisabledAtStartup>
+  	<CompatibleVersions>2.0</CompatibleVersions>
+  	<AffectsSavedGames>0</AffectsSavedGames>
+  </Properties>
+
+  <ActionCriteria>
+  	<Criteria id="Basegame">
+  		<RuleSetInUse>RULESET_STANDARD</RuleSetInUse>
+  	</Criteria>
+  	<Criteria id="Expansion1" any="1">
+  		<GameCoreInUse>Expansion1</GameCoreInUse>
+  		<RuleSetInUse>RULESET_EXPANSION_1</RuleSetInUse>
+  	</Criteria>
+  	<Criteria id="Expansion2" any="1">
+  		<GameCoreInUse>Expansion2</GameCoreInUse>
+  		<RuleSetInUse>RULESET_EXPANSION_2</RuleSetInUse>
+  	</Criteria>
+  </ActionCriteria>
+
+  <InGameActions>
+    <AddGameplayScripts id="StillAUsefulMaterial_Scripts" Criteria="Expansion2">
+  	  <Properties>
+  		<LoadOrder>13077</LoadOrder>
+  	  </Properties>
+  	  <File>Scripts/StillAUsefulMaterial.lua</File>
+    </AddGameplayScripts>
+
+  	<AddUserInterfaces id="StillAUsefulMaterial_UI_Additions" Criteria="Expansion2">
+  		<Properties>
+  			<Context>InGame</Context>
+  		</Properties>
+  		<Items>
+  			<File>Base/Assets/UI/Additions/IronMaterial.xml</File>
+  			<File>Base/Assets/UI/Additions/NiterMaterial.xml</File>
+  			<File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
+  		</Items>
+  	</AddUserInterfaces>
+
+    <ReplaceUIScript id="StillAUsefulMaterial_UI_Replacement_ProductionManager" Criteria="Expansion2">
+  		<Properties>
+  			<LoadOrder>13077</LoadOrder>
+  			<LuaContext>ProductionManager</LuaContext>
+  			<LuaReplace>Base/Assets/UI/Replacements/ProductionManager_SUM.lua</LuaReplace>
+  		</Properties>
+  	</ReplaceUIScript>
+
+    <ReplaceUIScript id="StillAUsefulMaterial_UI_Replacement_ProductionPanel" Criteria="Expansion2">
+  		<Properties>
+  			<LoadOrder>13077</LoadOrder>
+  			<LuaContext>ProductionPanel</LuaContext>
+  			<LuaReplace>Base/Assets/UI/Replacements/Panels/ProductionPanel_SUM.lua</LuaReplace>
+  		</Properties>
+  	</ReplaceUIScript>
+
+    <ReplaceUIScript id="StillAUsefulMaterial_UI_Replacement_CityBannerManager" Criteria="Expansion2">
+  		<Properties>
+  			<LoadOrder>13077</LoadOrder>
+  			<LuaContext>CityBannerManager</LuaContext>
+  			<LuaReplace>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SUM_XP2.lua</LuaReplace>    <!-- FortifAI _MUST_ load before StillAUsefulMaterial -->
+  		</Properties>
+  	</ReplaceUIScript>
+
+  	<ImportFiles id="StillAUsefulMaterial_ImportFiles_All" Criteria="Expansion2">
+  		<Properties>
+  			<LoadOrder>13077</LoadOrder>
+  		</Properties>
+  		<File>Scripts/StillAUsefulMaterial.lua</File>
+  		<File>Base/Assets/UI/Additions/IronMaterial.lua</File>
+  		<File>Base/Assets/UI/Additions/IronMaterial.xml</File>
+  		<File>Base/Assets/UI/Additions/NiterMaterial.lua</File>
+  		<File>Base/Assets/UI/Additions/NiterMaterial.xml</File>
+  		<File>Base/Assets/UI/Additions/HorseMaterial.lua</File>
+  		<File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
+  		<File>Base/Assets/UI/Replacements/ProductionManager_SUM.lua</File>
+  		<File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SUM.lua</File>
+  		<File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SUM_XP2.lua</File>
+  	</ImportFiles>
+
+  	<LocalizedText id="StillAUsefulMaterial_Localizations" Criteria="Expansion2">
+  	  <Items>
+        <File>Base/Assets/Text/StillAUsefulMaterial_general.xml</File>
+        <File>Base/Assets/Text/StillAUsefulMaterial_general_de.xml</File>
+  	  </Items>
+    </LocalizedText>
+  </InGameActions>
+
+  <Files Criteria="Expansion2">
+    <File>Scripts/StillAUsefulMaterial.lua</File>
+    <File>Base/Assets/UI/Additions/IronMaterial.lua</File>
+    <File>Base/Assets/UI/Additions/IronMaterial.xml</File>
+    <File>Base/Assets/UI/Additions/NiterMaterial.lua</File>
+    <File>Base/Assets/UI/Additions/NiterMaterial.xml</File>
+    <File>Base/Assets/UI/Additions/HorseMaterial.lua</File>
+    <File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
+    <File>Base/Assets/Text/StillAUsefulMaterial_general.xml</File>
+    <File>Base/Assets/Text/StillAUsefulMaterial_general_de.xml</File>
+    <File>Base/Assets/UI/Replacements/ProductionManager_SUM.lua</File>
+    <File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SUM.lua</File>
+    <File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SUM_XP2.lua</File>
+ </Files>
+</Mod>
