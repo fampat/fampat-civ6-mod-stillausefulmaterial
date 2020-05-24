@@ -19,13 +19,7 @@ end
 -- Add a log event for loading this
 print("Loading CityBannerManager_SUM_XP2.lua");
 
--- Bind original functions
-ORIGINAL_Initialize = Initialize;
-
-function Initialize()
-	-- Original initializer
-	ORIGINAL_Initialize();
-
+function Initialize_SUM_CityBannerManager()
   -- Update the ui after production progress has been made
 	Events.CityProductionUpdated.Add(RefreshBanner);
 	Events.CityProductionCompleted.Add(RefreshBanner);
@@ -35,4 +29,4 @@ function Initialize()
 end
 
 -- Fire!
-Initialize();
+Initialize_SUM_CityBannerManager();

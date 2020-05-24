@@ -55,7 +55,6 @@ function CreateMaterialBoostButton()
 	-- Set button data and action handler
 	ironProductionBoostInstance.IronProductionBoostButton:SetDisabled(isDisabled);
 	ironProductionBoostInstance.IronProductionBoostIcon:SetAlpha((isDisabled and 0.5) or 1);
-	ironProductionBoostInstance.IronProductionBoostArrow:SetAlpha((isDisabled and 0.5) or 0.75);
 	ironProductionBoostInstance.IronProductionBoostGear:SetAlpha((isDisabled and 0.5) or 1);
 	ironProductionBoostInstance.IronProductionBoostButton:SetToolTipString(tooltip);
 	ironProductionBoostInstance.IronProductionBoostButton:RegisterCallback(Mouse.eLClick,
@@ -318,6 +317,14 @@ function TakeAIActions()
   -- Get alive players (only major civs)
 	local players = Game.GetPlayers{Alive = true, Major = true};
 
+  -- Memorize old values
+  local MIN_AMOUNT_FOR_BOOST_BAK = MIN_AMOUNT_FOR_BOOST;
+  local MIN_ERA_INDEX_BAK = MIN_ERA_INDEX;
+
+  -- AI does to all this a bit later, we dont wanna criple it
+  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST + 10; -- Tweaked amount for AI
+  MIN_ERA_INDEX = MIN_ERA_INDEX + 0;                -- Tweaked era for AI (disabled atm, needs more testing)
+
 	-- Player is real?
 	for _, player in ipairs(players) do
     -- Is the player an AI?
@@ -341,6 +348,9 @@ function TakeAIActions()
       end
     end
 	end
+
+  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST_BAK;
+  MIN_ERA_INDEX = MIN_ERA_INDEX_BAK;
 end
 
 -- Debug function for logging
