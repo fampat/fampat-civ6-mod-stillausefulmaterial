@@ -165,7 +165,7 @@ function isBoostWithIronPossible(player)
           -- If enough iron is present, allow him to boost!
           if ironStockpileAmount >= MIN_AMOUNT_FOR_BOOST then
             -- I wanna know what happens there!
-            WriteToLog("Boost with iron is possible for player: "..player:GetID());
+            WriteToLog("Boost with iron is possible for player: "..player:GetID()..", with iron: "..ironStockpileAmount);
             return true;
           end
 
@@ -223,7 +223,7 @@ function boostProductionInCityWithIron(city)
     ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount(ownerId, GameInfo.Resources["RESOURCE_IRON"].Index, -substractedMaterial);
 
     -- Logging logging logging
-    WriteToLog("BOOST production in city: "..city:GetID());
+    WriteToLog("BOOSTed production in city: "..city:GetID().." with iron cost: "..substractedMaterial);
   else
     -- Also here we do our logging :)
     WriteToLog("BOOST not possible, no city selected!");
