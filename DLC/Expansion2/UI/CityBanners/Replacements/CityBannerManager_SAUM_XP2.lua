@@ -17,9 +17,9 @@ else
 end
 
 -- Add a log event for loading this
-print("Loading CityBannerManager_SUM_XP2.lua");
+print("Loading CityBannerManager_SAUM_XP2.lua");
 
-function Initialize_SUM_CityBannerManager()
+function Initialize_SAUM_CityBannerManager()
   -- Update the ui after production progress has been made
 	Events.CityProductionUpdated.Add(RefreshBanner);
 	Events.CityProductionCompleted.Add(RefreshBanner);
@@ -29,4 +29,4 @@ function Initialize_SUM_CityBannerManager()
 end
 
 -- Fire!
-Initialize_SUM_CityBannerManager();
+Initialize_SAUM_CityBannerManager();

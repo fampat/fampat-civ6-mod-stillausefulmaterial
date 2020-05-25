@@ -48,7 +48,7 @@
   		<Properties>
   			<LoadOrder>13077</LoadOrder>
   			<LuaContext>ProductionManager</LuaContext>
-  			<LuaReplace>Base/Assets/UI/Replacements/ProductionManager_SUM.lua</LuaReplace>
+  			<LuaReplace>Base/Assets/UI/Replacements/ProductionManager_SAUM.lua</LuaReplace>
   		</Properties>
   	</ReplaceUIScript>
 
@@ -56,7 +56,7 @@
   		<Properties>
   			<LoadOrder>13077</LoadOrder>
   			<LuaContext>ProductionPanel</LuaContext>
-  			<LuaReplace>Base/Assets/UI/Replacements/Panels/ProductionPanel_SUM.lua</LuaReplace>
+  			<LuaReplace>Base/Assets/UI/Replacements/Panels/ProductionPanel_SAUM.lua</LuaReplace>
   		</Properties>
   	</ReplaceUIScript>
 
@@ -64,7 +64,7 @@
   		<Properties>
   			<LoadOrder>13077</LoadOrder>
   			<LuaContext>CityBannerManager</LuaContext>
-  			<LuaReplace>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SUM_XP2.lua</LuaReplace>    <!-- FortifAI _MUST_ load before StillAUsefulMaterial -->
+  			<LuaReplace>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SAUM_XP2.lua</LuaReplace>    <!-- FortifAI _MUST_ load before StillAUsefulMaterial -->
   		</Properties>
   	</ReplaceUIScript>
 
@@ -73,15 +73,16 @@
   			<LoadOrder>13077</LoadOrder>
   		</Properties>
   		<File>Scripts/StillAUsefulMaterial.lua</File>
+  		<File>Base/Assets/UI/Additions/Helper/Common_SAUM.lua</File>
   		<File>Base/Assets/UI/Additions/IronMaterial.lua</File>
   		<File>Base/Assets/UI/Additions/IronMaterial.xml</File>
   		<File>Base/Assets/UI/Additions/NiterMaterial.lua</File>
   		<File>Base/Assets/UI/Additions/NiterMaterial.xml</File>
   		<File>Base/Assets/UI/Additions/HorseMaterial.lua</File>
   		<File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
-  		<File>Base/Assets/UI/Replacements/ProductionManager_SUM.lua</File>
-  		<File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SUM.lua</File>
-  		<File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SUM_XP2.lua</File>
+  		<File>Base/Assets/UI/Replacements/ProductionManager_SAUM.lua</File>
+  		<File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SAUM.lua</File>
+  		<File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SAUM_XP2.lua</File>
   	</ImportFiles>
 
   	<LocalizedText id="StillAUsefulMaterial_Localizations" Criteria="Expansion2">
@@ -94,6 +95,7 @@
 
   <Files Criteria="Expansion2">
     <File>Scripts/StillAUsefulMaterial.lua</File>
+    <File>Base/Assets/UI/Additions/Helper/Common_SAUM.lua</File>
     <File>Base/Assets/UI/Additions/IronMaterial.lua</File>
     <File>Base/Assets/UI/Additions/IronMaterial.xml</File>
     <File>Base/Assets/UI/Additions/NiterMaterial.lua</File>
@@ -102,8 +104,8 @@
     <File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
     <File>Base/Assets/Text/StillAUsefulMaterial_general.xml</File>
     <File>Base/Assets/Text/StillAUsefulMaterial_general_de.xml</File>
-    <File>Base/Assets/UI/Replacements/ProductionManager_SUM.lua</File>
-    <File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SUM.lua</File>
-    <File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SUM_XP2.lua</File>
+    <File>Base/Assets/UI/Replacements/ProductionManager_SAUM.lua</File>
+    <File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SAUM.lua</File>
+    <File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SAUM_XP2.lua</File>
  </Files>
 </Mod>

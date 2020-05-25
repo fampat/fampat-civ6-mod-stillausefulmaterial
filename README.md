@@ -1,6 +1,6 @@
 [h1]Still A Useful Material - BETA[/h1]
 
-This mod enables a player to make use of early strategic resources no longer needed.
+This mod enables a player to make use of early strategic resources which often are no longer needed mid-late game.
 
 [b]Features[/b]
 The intention of this mod is to be able to make use of resources no longer required in later eras.
@@ -8,29 +8,31 @@ The intention of this mod is to be able to make use of resources no longer requi
 After a certain amount of iron, niter or horses has been accumulated you will be able to use these
 to boost production, science and culture.
 
-The amount of boots are only minor but steady, depending on your income of strategic resources.
+The amount of boosts are depending on the amount accumulated.
 At the moment every AI civ is also boosting up to once per turn.
 
 [b]Boostable Resources[/b]
 [u]Iron[/u]
-Minimal amount for boosting is 25, can be used on the production-panel to boost the current
-production of a city. Only usable once per turn. The entire iron will be used if possible.
-
-If a production gets completed, only the iron for completing it will be consumed.
-You need to be in the renaissance era to be able to use the iron boost.
+- Boost ratio: 1 Iron to 1 Production
+- Minimal amount for boosting is 25, the [b]button will ONLY show up[/b] on the production-panel if you have enough iron
+- Usable once per turn (no finishing and boosting on the same turn)
+- Its a all or nothing decision, all iron will be consumed for boosting (if possible)
+- Incase a boost would finish the production, it will consume iron equal to the needed production
 
 [u]Niter[/u]
-Currently in development.
+- Currently in development
 
 [u]Horses[/u]
-Currently in development.
+- Currently in development
 
 [b]Upcoming[/b]
-- Implementation of niter and horse boosts.
-- Adding deeper decision-logic for AI boosting.
+- Implementation of niter and horse boosts
+- Adding deeper decision-logic for AI boosting
+- Tweaking maybe
 
 [b]Known issues[/b]
-- Currently iam testing all this.
+- Currently iam testing all this, it might come to issues, please report!
+- Especially the boost-ratios might need to be tweaked, please leave me your comments!
 
 [b]Game-Versions & Localization[/b]
 Works only with Gathering-Storm.

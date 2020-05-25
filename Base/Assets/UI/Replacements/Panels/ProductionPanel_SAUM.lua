@@ -8,7 +8,7 @@
 include("ProductionPanel");
 
 -- Add a log event for loading this
-print("Loading ProductionPanel_SUM.lua");
+print("Loading ProductionPanel_SAUM.lua");
 
 -- Bind original functions
 ORIGINAL_Initialize = Initialize;

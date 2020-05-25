@@ -6,9 +6,7 @@
 include("Civ6Common");
 include("CitySupport");
 include("InstanceManager");
-
--- Debugging mode switch
-local debugMode = true;
+include("Common_SAUM.lua");
 
 -- Configuration
 local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of iron that is required before the button shows up
@@ -25,28 +23,43 @@ local boostedThisTurn = false;
 local selectedCity = nil;
 
 -- Create the button
-function CreateMaterialBoostButton()
+function createIronMaterialBoostButton()
   -- Inform us!
-  WriteToLog("Create material boost button");
+  WriteToLog("Create material boost button!");
 
   -- Freshen up the button
 	ironMaterialBoostButtonIM:ResetInstances();
 	local ironProductionBoostInstance = ironMaterialBoostButtonIM:GetInstance();
 
-  -- Produce our iron icon
-  local iconTable = {};
-  iconTable.textureOffsetX, iconTable.textureOffsetY, iconTable.textureSheet = IconManager:FindIconAtlasNearestSize("ICON_RESOURCE_IRON", 38);
-  ironProductionBoostInstance.IronProductionBoostIcon:SetTexture(iconTable.textureOffsetX, iconTable.textureOffsetY, iconTable.textureSheet);
-  ironProductionBoostInstance.IronProductionBoostIcon:SetSizeVal(38, 38);
-
   -- Default tooltip
-  local tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP");
+  local tooltip = "ERROR_TOOLTIP_NOT_SET";
 
-  -- State-dependant tooltip
+  -- State-dependent tooltip
   if boostedThisTurn then
     tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_IRON_BOOSTED_TOOLTIP");
   elseif not isCityProducing(selectedCity) then
     tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NO_PRODUCTION_TOOPTIP");
+  else
+    -- Default value
+    local ironAmountToConsume = 0;
+    local productionToBeCompleted = 0;
+
+    -- Fetch values for calculating numbers
+    local resourceStockpile = getStrategicResourceStockpileOfCityOwner(selectedCity, "RESOURCE_IRON");
+    local requiredProductionNeeded = getProductionAmountNeededForCompletion(selectedCity);
+
+    -- Do some very complex math...
+    if requiredProductionNeeded <= resourceStockpile then
+      ironAmountToConsume = requiredProductionNeeded;
+      productionToBeCompleted = requiredProductionNeeded;
+    else
+      ironAmountToConsume = resourceStockpile;
+      productionToBeCompleted = resourceStockpile;
+    end
+    -- ...done
+
+    -- Set our tooltip
+    tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP", ironAmountToConsume, productionToBeCompleted);
   end
 
   -- Set the disabled state
@@ -54,53 +67,86 @@ function CreateMaterialBoostButton()
 
 	-- Set button data and action handler
 	ironProductionBoostInstance.IronProductionBoostButton:SetDisabled(isDisabled);
-	ironProductionBoostInstance.IronProductionBoostIcon:SetAlpha((isDisabled and 0.5) or 1);
-	ironProductionBoostInstance.IronProductionBoostGear:SetAlpha((isDisabled and 0.5) or 1);
+	ironProductionBoostInstance.IronProductionBoostIcon:SetAlpha((isDisabled and 0.65) or 1);
 	ironProductionBoostInstance.IronProductionBoostButton:SetToolTipString(tooltip);
+
+  -- Callback function
 	ironProductionBoostInstance.IronProductionBoostButton:RegisterCallback(Mouse.eLClick,
 		function(void1, void2)
       -- Our callback plays sound, boost and refreshens the button
 			UI.PlaySound("Play_UI_Click");
-      boostProductionInCity(selectedCity);
+
+      -- Execute the boost
+      boostProductionInCityWithIron(selectedCity);
+
+      -- Memorize state
       boostedThisTurn = true;
-      refreshMaterialBoostButton();
+
+      -- Refresh the button in "used"-state
+      refreshIronMaterialBoostButton();
 		end
 	);
 end
 
 -- Attach our button to the production-panel, where it resides
-function attachMaterialBoostBotton()
+function attachIronMaterialBoostBotton()
+  -- Log me a message darling
+  WriteToLog("Attaching iron material boost button...");
+
+  -- City is real?
   if selectedCity ~= nil then
     local localPlayer = Players[Game.GetLocalPlayer()];
 
     -- If is possible to attach, we will see
     if isBoostWithIronPossible(localPlayer) or boostedThisTurn then
-      CreateMaterialBoostButton();
+      -- Create the button
+      createIronMaterialBoostButton();
 
-      -- Within the top-stack, top-stack for a top-buton :)
-      local currentTopStack = ContextPtr:LookUpControl("/InGame/ProductionPanel/TopStack");
+      -- Get ui control where we wanna add our button to
+      local ScrollToButtonContainer = ContextPtr:LookUpControl("/InGame/ProductionPanel/ScrollToButtonContainer");
 
-      -- Top-stack isnt just a myth?
-    	if currentTopStack ~= nil then
-        -- We parented it :)
-    		Controls.IronProductionBoostStack:ChangeParent(currentTopStack);
+      -- There should only be a single child!
+      if ScrollToButtonContainer:GetNumChildren() == 1 then
+        -- Who are your children?
+        local ScrollToButtonContainerChildren = ScrollToButtonContainer:GetChildren();
 
-        -- We are now an official child
-        currentTopStack:AddChildAtIndex(Controls.IronProductionBoostStack, 1);
-    		currentTopStack:CalculateSize();
-    		currentTopStack:ReprocessAnchoring();
+        -- We need a children to be there, else we have an issue!
+    		if ScrollToButtonContainerChildren ~= nil then
 
+          -- Loop the (one) children XD
+    			for i,ScrollToButtonContainerChild in ipairs(ScrollToButtonContainerChildren) do
+            -- Rebase our ui-button to the new parent
+            Controls.IronProductionBoostStack:ChangeParent(ScrollToButtonContainerChild);
+
+            -- Recalculate the stack to show our button properly
+            ScrollToButtonContainerChild:CalculateSize();
+            ScrollToButtonContainerChild:ReprocessAnchoring();
+          end
+
+          -- Log me another message darling
+          WriteToLog("...Attached!");
+        else
+          -- What happened?
+          WriteToLog("ERROR: Not able to attach the boost-iron button!");
+        end
+      else
         -- What happened?
-        WriteToLog("Attached material boost button");
-    	end
+        WriteToLog("ERROR: Unexpected children count on ui-control!");
+      end
+    else
+      -- Log me a message darling
+      WriteToLog("...not attached!");
   	end
+  else
+    -- Log me a third message baby
+    WriteToLog("...no city selected!");
 	end
 end
 
 -- Remove our button
-function detachMaterialBoostButton()
+function detachIronMaterialBoostButton()
   ironMaterialBoostButtonIM:DestroyInstances();
-  WriteToLog("Detached material boost button");
+  WriteToLog("Detached material boost button!");
 end
 
 -- Helper to check if a player is able to use the boost
@@ -113,16 +159,17 @@ function isBoostWithIronPossible(player)
     for resource in GameInfo.Resources() do
       if (resource.ResourceClassType == "RESOURCECLASS_STRATEGIC") then
         if resource.ResourceType == "RESOURCE_IRON" then
-            local ironStockpileAmount = playerResources:GetResourceAmount(resource.ResourceType);
+          -- Get the players stock
+          local ironStockpileAmount = playerResources:GetResourceAmount(resource.ResourceType);
 
-            -- If enough iron is present, allow him to boost!
-            if ironStockpileAmount >= MIN_AMOUNT_FOR_BOOST then
-              -- I wanna know what happens there!
-              WriteToLog("Boost with iron is possible for player: "..player:GetID());
-              return true;
-            end
+          -- If enough iron is present, allow him to boost!
+          if ironStockpileAmount >= MIN_AMOUNT_FOR_BOOST then
+            -- I wanna know what happens there!
+            WriteToLog("Boost with iron is possible for player: "..player:GetID());
+            return true;
+          end
 
-            break;
+          break;
         end
       end
     end
@@ -140,51 +187,40 @@ function hasRequiredEra(player)
 end
 
 -- Refresh out button on the UI
-function refreshMaterialBoostButton()
-  detachMaterialBoostButton();
-  attachMaterialBoostBotton();
+function refreshIronMaterialBoostButton()
+  detachIronMaterialBoostButton();
+  attachIronMaterialBoostBotton();
 end
 
 -- The actual production boost action takes place here
-function boostProductionInCity(city)
+function boostProductionInCityWithIron(city)
   -- But only with real cities
   if city ~= nil then
     -- Variables stuff
     local cityId = city:GetID();
     local ownerId = city:GetOwner();
-    local player = Players[ownerId];
-    local playerResources = player:GetResources();
 
-    -- Loop the games resources
-    for resource in GameInfo.Resources() do
-      -- We are interessted in strategics
-  	  if resource.ResourceClassType == "RESOURCECLASS_STRATEGIC" then
-        -- And from that only iron!
-        if resource.ResourceType == "RESOURCE_IRON" then
-          -- Fetch the stockpile of the player, and the current production state
-          local resourceStockpile = playerResources:GetResourceAmount(resource.ResourceType);
-          local requiredProductionNeeded = getProductionAmountNeededForCompletion(city);
+    -- Fetch the stockpile of the player, and the current production state
+    local resourceStockpile = getStrategicResourceStockpileOfCityOwner(city, "RESOURCE_IRON");
+    local requiredProductionNeeded = getProductionAmountNeededForCompletion(city);
 
-          local substractedMaterial = 0;
+    -- Calc variable
+    local substractedMaterial = 0;
 
-          -- In case we have more iron that it would cost, complete it!
-          -- And save some precious iron
-          if requiredProductionNeeded <= resourceStockpile then
-            -- Finish production, substract resource equl production-cost
-            ExposedMembers.MOD_StillAUsefulMaterial.CompleteProduction(ownerId, cityId);
-            substractedMaterial = requiredProductionNeeded;
-          else
-            -- Add to production, substract entire resources
-            ExposedMembers.MOD_StillAUsefulMaterial.AddToProduction(ownerId, cityId, resourceStockpile);
-            substractedMaterial = resourceStockpile;
-          end
+    -- In case we have more iron that it would cost, complete it!
+    -- And save some precious iron
+    if requiredProductionNeeded <= resourceStockpile then
+      -- Finish production, substract resource equl production-cost
+      ExposedMembers.MOD_StillAUsefulMaterial.CompleteProduction(ownerId, cityId);
+      substractedMaterial = requiredProductionNeeded;
+    else
+      -- Add to production, substract entire resources
+      ExposedMembers.MOD_StillAUsefulMaterial.AddToProduction(ownerId, cityId, resourceStockpile);
+      substractedMaterial = resourceStockpile;
+    end
 
-          -- Here we call out big brother for help!
-          ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount(ownerId, resource.Index, -substractedMaterial);
-          break;
-        end
-  	  end
-  	end
+    -- Here we call out big brother for help!
+    ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount(ownerId, GameInfo.Resources["RESOURCE_IRON"].Index, -substractedMaterial);
 
     -- Logging logging logging
     WriteToLog("BOOST production in city: "..city:GetID());
@@ -192,36 +228,6 @@ function boostProductionInCity(city)
     -- Also here we do our logging :)
     WriteToLog("BOOST not possible, no city selected!");
   end
-end
-
--- Helper to check if a city is currently producing something
-function isCityProducing(city)
-  return (getProductionAmountNeededForCompletion(city) ~= 0);
-end
-
--- Helper to determine how much production is needed for completion
-function getProductionAmountNeededForCompletion(pCity)
-  local pBuildQueue = pCity:GetBuildQueue();
-	local currentProductionHash = 0;
-
-  -- Fetch the current production
-  local currentProductionHash = pBuildQueue:GetCurrentProductionTypeHash();
-
-  -- If there is a production ongoing...
-  if(currentProductionHash ~= 0) then
-    -- ...get us the data and calculate how much is left
-    local currentProductionInfo = GetProductionInfoOfCity(pCity, currentProductionHash);
-    local productionNeededForFinish = currentProductionInfo.Cost - currentProductionInfo.Progress;
-
-    -- Transparency!
-    WriteToLog("Production needed for finish: "..productionNeededForFinish);
-
-    -- The beautiful result of our very complex calculation!
-    return productionNeededForFinish;
-	end
-
-  WriteToLog("No production to finish here, move along");
-  return 0;
 end
 
 -- Tabs get changed on the production-panel
@@ -248,7 +254,7 @@ function OnProductionPanelListModeChanged(listMode)
         local localPlayer = Players[localPlayerID];
 
         -- Attach our boost-button
-        attachMaterialBoostBotton();
+        attachIronMaterialBoostBotton();
       end
     else
       WriteToLog("Hide the boost button (no production-tab selected)!");
@@ -289,7 +295,7 @@ function OnCityProductionQueueChanged(playerId, cityId, changeType, queueIndex)
     selectedCity = pCity;
 
     -- ...because we need to refresh the damn UI
-    refreshMaterialBoostButton();
+    refreshIronMaterialBoostButton();
   end
 end
 
@@ -299,20 +305,20 @@ function OnTurnBegin()
   boostedThisTurn = false;
 
   -- Button not needed here
-  detachMaterialBoostButton();
+  detachIronMaterialBoostButton();
 
   -- We need to know everything
   WriteToLog("Turn begins, boosted value has been reset!");
 
   -- Its AIs turn to boost baby!
-  TakeAIActions();
+  TakeAIActionsForIronBoost();
 end
 
 -- AIs will also get a boost if they can afford it
 -- TODO: Implement descision-making for more intelligent boosting, eg.
 --       if military production exist, boost that instead of a settler.
-function TakeAIActions()
-  WriteToLog("AIs boosting begun!");
+function TakeAIActionsForIronBoost()
+  WriteToLog("AIs production boosting begun!");
 
   -- Get alive players (only major civs)
 	local players = Game.GetPlayers{Alive = true, Major = true};
@@ -337,7 +343,7 @@ function TakeAIActions()
         for _, pCity in pCities:Members() do
           if isCityProducing(pCity) then
             -- Boost the AI´s city
-            boostProductionInCity(pCity);
+            boostProductionInCityWithIron(pCity);
 
             -- Logging to make clear what the AI is getting
             local AIPlayerConfiguration = PlayerConfigurations[player:GetID()];
@@ -351,13 +357,6 @@ function TakeAIActions()
 
   MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST_BAK;
   MIN_ERA_INDEX = MIN_ERA_INDEX_BAK;
-end
-
--- Debug function for logging
-function WriteToLog(message)
-	if (debugMode and message ~= nil) then
-		print(message);
-	end
 end
 
 -- Initialization stuffs

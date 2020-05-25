@@ -8,7 +8,7 @@
 include("ProductionManager");
 
 -- Add a log event for loading this
-print("Loading ProductionManager_SUM.lua");
+print("Loading ProductionManager_SAUM.lua");
 
 -- Bind original functions
 ORIGINAL_Initialize = Initialize;

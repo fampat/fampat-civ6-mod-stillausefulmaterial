@@ -5,7 +5,7 @@
 
     <!-- Production panel -->
   	<Row Tag="LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP">
-  		<Text>Use up to all of your iron for spare-parts and alloys to boost or finish this production.</Text>
+  		<Text>Use up to all of your iron for spare-parts and alloys to boost or finish this production.[NEWLINE]----------[NEWLINE]Use {1_Amount_Iron} [ICON_RESOURCE_IRON] to boost for {2_Amount_Production} [ICON_PRODUCTION]</Text>
   	</Row>
   	<Row Tag="LOC_STILLAUSEFULMATERIAL_IRON_BOOSTED_TOOLTIP">
   		<Text>You already have boosted a production on this turn.</Text>
