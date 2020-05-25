@@ -276,6 +276,9 @@ function OnCitySelectionChanged(ownerId, cityId, i, j, k, isSelected, isEditable
       if cityId == pCity:GetID() then
         -- ...to know which city we might boos with our button
         selectedCity = pCity;
+
+        -- ...because we need to refresh the damn UI
+        refreshIronMaterialBoostButton();
         break;
       end
     end
@@ -292,6 +295,7 @@ function OnCityProductionQueueChanged(playerId, cityId, changeType, queueIndex)
   pCity = localPlayer:GetCities():FindID(cityId);
 
   if pCity ~= nil then
+    -- ...to know which city we might boos with our button
     selectedCity = pCity;
 
     -- ...because we need to refresh the damn UI
