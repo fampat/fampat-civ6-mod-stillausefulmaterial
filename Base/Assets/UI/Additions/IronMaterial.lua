@@ -152,7 +152,7 @@ end
 -- Helper to check if a player is able to use the boost
 function isBoostWithIronPossible(player)
   -- He need to be in the right era!
-  if hasRequiredEra(player) then
+  if hasRequiredEra(player, MIN_ERA_INDEX) then
     local playerResources = player:GetResources();
 
     -- He wil need iron to make it work!
@@ -178,12 +178,6 @@ function isBoostWithIronPossible(player)
   -- Transparency!
   WriteToLog("Boost with iron is NOT possible for player: "..player:GetID());
   return false;
-end
-
--- Helper to check if the player mets an era
-function hasRequiredEra(player)
-  local pEra = GameInfo.Eras[player:GetEra()];
-  return (pEra.ChronologyIndex >= MIN_ERA_INDEX);
 end
 
 -- Refresh out button on the UI
@@ -303,8 +297,8 @@ function OnCityProductionQueueChanged(playerId, cityId, changeType, queueIndex)
   end
 end
 
--- Thinigs that happen when the turn starts
-function OnTurnBegin()
+-- Thinigs that happen when the local player turn starts
+function OnLocalPlayerTurnBegin()
   -- Reset boosted stat
   boostedThisTurn = false;
 
@@ -313,7 +307,10 @@ function OnTurnBegin()
 
   -- We need to know everything
   WriteToLog("Turn begins, boosted value has been reset!");
+end
 
+-- Thinigs that happen when the turn starts
+function OnTurnBegin()
   -- Its AIs turn to boost baby!
   TakeAIActionsForIronBoost();
 end
@@ -371,6 +368,9 @@ function Initialize()
   -- Events we want to hook into for refreshing the UI
   Events.CityProductionQueueChanged.Add(OnCityProductionQueueChanged);
   Events.CitySelectionChanged.Add(OnCitySelectionChanged);
+
+  -- Trigger a boosting reset and UI handling
+  Events.LocalPlayerTurnBegin.Add(OnLocalPlayerTurnBegin);
 
   -- Trigger a boosting reset and the AI handling
   Events.TurnBegin.Add(OnTurnBegin);

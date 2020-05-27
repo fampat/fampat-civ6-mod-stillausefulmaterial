@@ -35,6 +35,44 @@ function getProductionAmountNeededForCompletion(pCity)
   return 0;
 end
 
+-- Helper to check if a player has a research selected and it is boostable
+function isPlayerResearching(player)
+  return (getScienceAmountNeededForCompletion(player) > 0);
+end
+
+-- Helper to determine how much science is needed for completion
+function getScienceAmountNeededForCompletion(player)
+  -- Fetch the players techs
+  local playerTechs = player:GetTechs();
+
+  -- Fetch the current researching tech
+  local currentTechID = playerTechs:GetResearchingTech();
+
+  -- Continue if a research is going on
+  if(currentTechID >= 0) then
+    -- Get progress
+    local progress = playerTechs:GetResearchProgress(currentTechID);
+
+    -- Get costs
+    local cost = playerTechs:GetResearchCost(currentTechID);
+
+    -- If there is a research ongoing...
+    if(cost > 0) then
+      -- ...get us the data and calculate how much is left
+      local scienceNeededForFinish = cost - progress;
+
+      -- Transparency!
+      WriteToLog("Science needed for finish: "..scienceNeededForFinish);
+
+      -- The beautiful result of our very complex calculation!
+      return scienceNeededForFinish;
+  	end
+  end
+
+  WriteToLog("No research to finish here, move along");
+  return 0;
+end
+
 -- Fetch a city`s owners stockpile of a resource
 function getStrategicResourceStockpileOfCityOwner(city, resourceType)
   -- But only with real cities
@@ -43,6 +81,17 @@ function getStrategicResourceStockpileOfCityOwner(city, resourceType)
     local cityId = city:GetID();
     local ownerId = city:GetOwner();
     local player = Players[ownerId];
+    return getStrategicResourceStockpileOfPlayer(player, resourceType);
+  end
+
+  return 0;
+end
+
+-- Fetch a players`s stockpile of a resource
+function getStrategicResourceStockpileOfPlayer(player, resourceType)
+  -- But only with players
+  if player ~= nil then
+    -- Variables stuff
     local playerResources = player:GetResources();
 
     -- Loop the games resources
@@ -59,6 +108,12 @@ function getStrategicResourceStockpileOfCityOwner(city, resourceType)
   end
 
   return 0;
+end
+
+-- Helper to check if the player mets an era
+function hasRequiredEra(player, era)
+  local pEra = GameInfo.Eras[player:GetEra()];
+  return (pEra.ChronologyIndex >= era);
 end
 
 -- Debug function for logging

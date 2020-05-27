@@ -44,6 +44,14 @@
   		</Items>
   	</AddUserInterfaces>
 
+    <ReplaceUIScript id="StillAUsefulMaterial_UI_Replacement_LaunchBar" Criteria="Expansion2">
+  		<Properties>
+  			<LoadOrder>13077</LoadOrder>
+  			<LuaContext>LaunchBar</LuaContext>
+  			<LuaReplace>Base/Assets/UI/Replacements/LaunchBar_SAUM.lua</LuaReplace>
+  		</Properties>
+  	</ReplaceUIScript>
+
     <ReplaceUIScript id="StillAUsefulMaterial_UI_Replacement_ProductionManager" Criteria="Expansion2">
   		<Properties>
   			<LoadOrder>13077</LoadOrder>
@@ -81,6 +89,7 @@
   		<File>Base/Assets/UI/Additions/HorseMaterial.lua</File>
   		<File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
   		<File>Base/Assets/UI/Replacements/ProductionManager_SAUM.lua</File>
+  		<File>Base/Assets/UI/Replacements/LaunchBar_SAUM.lua</File>
   		<File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SAUM.lua</File>
   		<File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SAUM_XP2.lua</File>
   	</ImportFiles>
@@ -105,6 +114,7 @@
     <File>Base/Assets/Text/StillAUsefulMaterial_general.xml</File>
     <File>Base/Assets/Text/StillAUsefulMaterial_general_de.xml</File>
     <File>Base/Assets/UI/Replacements/ProductionManager_SAUM.lua</File>
+    <File>Base/Assets/UI/Replacements/LaunchBar_SAUM.lua</File>
     <File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SAUM.lua</File>
     <File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SAUM_XP2.lua</File>
  </Files>

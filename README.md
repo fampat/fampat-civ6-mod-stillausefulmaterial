@@ -5,8 +5,7 @@ This mod enables a player to make use of early strategic resources which often a
 [b]Features[/b]
 The intention of this mod is to be able to make use of resources no longer required in later eras.
 
-After a certain amount of iron, niter or horses has been accumulated you will be able to use these
-to boost production, science and culture.
+After a certain amount of iron, niter or horses has been accumulated and the Renaissance era has been reached, you will be able to use these to boost production, science and culture.
 
 The amount of boosts are depending on the amount accumulated.
 At the moment every AI civ is also boosting up to once per turn.
@@ -14,21 +13,27 @@ At the moment every AI civ is also boosting up to once per turn.
 [b]Boostable Resources[/b]
 [u]Iron[/u]
 - Boost ratio: 1 Iron to 1 Production
-- Minimal amount for boosting is 25, the [b]button will ONLY show up[/b] on the production-panel if you have enough iron
+- Minimal amount for boosting is 25, [b]button wont show up else[/b]
+- Minimal era required: Renaissance, [b]button wont show up else[/b]
 - Usable once per turn (no finishing and boosting on the same turn)
 - Its a all or nothing decision, all iron will be consumed for boosting (if possible)
 - Incase a boost would finish the production, it will consume iron equal to the needed production
 
 [u]Niter[/u]
-- Currently in development
+- Boost ratio: 1 Niter to 1 Science
+- Minimal amount for boosting is 25, [b]button wont show up else[/b]
+- Minimal era required: Industrial, [b]button wont show up else[/b]
+- Usable once per turn (no boosting, trading and boosting again)
+- Its a all or nothing decision, all niter will be consumed for boosting (if possible)
+- Incase a boost would finish the research, it will consume niter equal to the needed science
 
 [u]Horses[/u]
 - Currently in development
 
 [b]Upcoming[/b]
-- Implementation of niter and horse boosts
+- Implementation of horse boosts
 - Adding deeper decision-logic for AI boosting
-- Tweaking maybe
+- Tweaking if needed
 
 [b]Known issues[/b]
 - Currently iam testing all this, it might come to issues, please report!

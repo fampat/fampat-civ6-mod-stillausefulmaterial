@@ -13,5 +13,27 @@
   	<Row Tag="LOC_STILLAUSEFULMATERIAL_NO_PRODUCTION_TOOPTIP">
   		<Text>No production to boost right now.</Text>
   	</Row>
+
+    <!-- Research button -->
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_NITER_UNBOOSTED_TOOLTIP">
+  		<Text>Use up to all of your niter for its chemical components to boost or finish the current research.[NEWLINE]----------[NEWLINE]Use {1_Amount_Niter} [ICON_RESOURCE_NITER] to boost for {2_Amount_Science} [ICON_SCIENCE]</Text>
+  	</Row>
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_NITER_BOOSTED_TOOLTIP">
+  		<Text>You already have boosted the research on this turn.</Text>
+  	</Row>
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_NO_RESEARCH_TOOPTIP">
+  		<Text>No research to boost right now, consider selecting one.</Text>
+  	</Row>
+
+    <!-- Culture button -->
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_HORSES_UNBOOSTED_TOOLTIP">
+  		<Text>Use up to all of your horses for horse-farms and gourmet-restaurants to boost or finish the current cultural development.[NEWLINE]----------[NEWLINE]Use {1_Amount_Horses} [ICON_RESOURCE_HORSES] to boost for {2_Amount_Culture} [ICON_CULTURE]</Text>
+  	</Row>
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_HORSES_BOOSTED_TOOLTIP">
+  		<Text>You already have boosted you cultural development on this turn.</Text>
+  	</Row>
+  	<Row Tag="LOC_STILLAUSEFULMATERIAL_NO_CIVIC_TOOPTIP">
+  		<Text>No cultural development to boost right now, consider selecting one.</Text>
+  	</Row>
   </BaseGameText>
 </GameData>

@@ -37,6 +37,17 @@ function OnAddToProduction(playerId, cityId, amount)
 	WriteToLog("Added to production: "..amount);
 end
 
+-- Also helps out...
+function OnAddToResearch(playerId, amount)
+	local player = Players[playerId];
+
+	-- ...by adding science
+	player:GetTechs():ChangeCurrentResearchProgress(amount);
+
+	-- What happened?
+	WriteToLog("Added "..amount.." science for player: "..playerId);
+end
+
 -- Debug function for logging
 function WriteToLog(message)
 	if (debugMode and message ~= nil) then
@@ -53,6 +64,7 @@ function Initialize()
 	ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount = OnChangeResourceAmount;
 	ExposedMembers.MOD_StillAUsefulMaterial.CompleteProduction = OnCompleteProduction;
 	ExposedMembers.MOD_StillAUsefulMaterial.AddToProduction = OnAddToProduction;
+	ExposedMembers.MOD_StillAUsefulMaterial.AddToResearch = OnAddToResearch;
 
 	-- Init message log
 	print("Initialized.");
