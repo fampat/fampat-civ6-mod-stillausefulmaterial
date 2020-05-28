@@ -73,6 +73,44 @@ function getScienceAmountNeededForCompletion(player)
   return 0;
 end
 
+-- Helper to check if a player has a civic selected and it is boostable
+function isPlayerDevelopingCulture(player)
+  return (getCultureAmountNeededForCompletion(player) > 0);
+end
+
+-- Helper to determine how much culture is needed for completion
+function getCultureAmountNeededForCompletion(player)
+  -- Fetch the players civics
+  local playerCulture = player:GetCulture();
+
+  -- Fetch the current civic tech
+  local currentCivicID = playerCulture:GetProgressingCivic();
+
+  -- Continue if a civic is going on
+  if(currentCivicID >= 0) then
+    -- Get progress
+    local progress = playerCulture:GetCulturalProgress(currentCivicID);
+
+    -- Get costs
+    local cost = playerCulture:GetCultureCost(currentCivicID);
+
+    -- If there is a civic ongoing...
+    if(cost > 0) then
+      -- ...get us the data and calculate how much is left
+      local cultureNeededForFinish = cost - progress;
+
+      -- Transparency!
+      WriteToLog("Culture needed for finish: "..cultureNeededForFinish);
+
+      -- The beautiful result of our very complex calculation!
+      return cultureNeededForFinish;
+  	end
+  end
+
+  WriteToLog("No civic to finish here, move along");
+  return 0;
+end
+
 -- Fetch a city`s owners stockpile of a resource
 function getStrategicResourceStockpileOfCityOwner(city, resourceType)
   -- But only with real cities

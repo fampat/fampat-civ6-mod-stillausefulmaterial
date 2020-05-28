@@ -48,6 +48,17 @@ function OnAddToResearch(playerId, amount)
 	WriteToLog("Added "..amount.." science for player: "..playerId);
 end
 
+-- Also helps out...
+function OnAddToCivic(playerId, amount)
+	local player = Players[playerId];
+
+	-- ...by adding culture
+	player:GetCulture():ChangeCurrentCulturalProgress(amount);
+
+	-- What happened?
+	WriteToLog("Added "..amount.." culture for player: "..playerId);
+end
+
 -- Debug function for logging
 function WriteToLog(message)
 	if (debugMode and message ~= nil) then
@@ -65,6 +76,7 @@ function Initialize()
 	ExposedMembers.MOD_StillAUsefulMaterial.CompleteProduction = OnCompleteProduction;
 	ExposedMembers.MOD_StillAUsefulMaterial.AddToProduction = OnAddToProduction;
 	ExposedMembers.MOD_StillAUsefulMaterial.AddToResearch = OnAddToResearch;
+	ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic = OnAddToCivic;
 
 	-- Init message log
 	print("Initialized.");

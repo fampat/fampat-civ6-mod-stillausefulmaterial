@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Context ID="NiterMaterial" >
 
-  <Stack ID="NiterResearchBoostStack" Anchor="C,C" StackGrowth="Right" StackPadding="2" />
+  <Stack ID="NiterResearchBoostStack" Offset="0,-2" Anchor="C,C" StackGrowth="Right" StackPadding="2" />
 
   <Instance Name="NiterResearchBoostInstance" >
-    <Button	ID="NiterResearchBoostButton" Size="40,40" Offset="-2,-1" Texture="LaunchBar_Hook_ButtonSmall" Style="ButtonDisabledText">
+    <Button	ID="NiterResearchBoostButton" Size="40,40" Offset="0,0" Texture="LaunchBar_Hook_ButtonSmall" Anchor="C,C" Style="ButtonDisabledText">
+      <Image ID="NiterResearchBoostPip" Anchor="L,C" Offset="0,-2" Size="7,7" Texture="LaunchBar_TrackPip" Color="255,255,255,200"/>
       <Image ID="NiterResearchBoostIcon" Size="26,26" IconSize="26" Icon="ICON_RESOURCE_NITER" Anchor="C,C"/>
     </Button>
   </Instance>

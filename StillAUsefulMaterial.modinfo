@@ -2,7 +2,7 @@
 <Mod id="7483f288-221c-42fa-a757-0bcf89bca2b1" version="0.3">
   <Properties>
     <Name>Still A Useful Material [BETA]</Name>
-    <Teaser>Adds in a use for iron, horses (TODO) and niter (TODO) on later game-eras. Gathering-Storm ONLY!</Teaser>
+    <Teaser>Adds in a use for iron, horses and niter on later game-eras. Gathering-Storm ONLY!</Teaser>
     <Description>Adds the option to use iron as a production booster whilst niter can be used to boost science. Horses make a great cultural good. Gathering-Storm ONLY!</Description>
     <Authors>Fampat</Authors>
     <EnabledByDefault>1</EnabledByDefault>
@@ -40,7 +40,7 @@
   		<Items>
   			<File>Base/Assets/UI/Additions/IronMaterial.xml</File>
   			<File>Base/Assets/UI/Additions/NiterMaterial.xml</File>
-  			<File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
+  			<File>Base/Assets/UI/Additions/HorsesMaterial.xml</File>
   		</Items>
   	</AddUserInterfaces>
 
@@ -48,7 +48,7 @@
   		<Properties>
   			<LoadOrder>13077</LoadOrder>
   			<LuaContext>LaunchBar</LuaContext>
-  			<LuaReplace>Base/Assets/UI/Replacements/LaunchBar_SAUM.lua</LuaReplace>
+  			<LuaReplace>DLC/Expansion2/UI/Replacements/LaunchBar_SAUM_XP2.lua</LuaReplace>
   		</Properties>
   	</ReplaceUIScript>
 
@@ -86,11 +86,11 @@
   		<File>Base/Assets/UI/Additions/IronMaterial.xml</File>
   		<File>Base/Assets/UI/Additions/NiterMaterial.lua</File>
   		<File>Base/Assets/UI/Additions/NiterMaterial.xml</File>
-  		<File>Base/Assets/UI/Additions/HorseMaterial.lua</File>
-  		<File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
+  		<File>Base/Assets/UI/Additions/HorsesMaterial.lua</File>
+  		<File>Base/Assets/UI/Additions/HorsesMaterial.xml</File>
   		<File>Base/Assets/UI/Replacements/ProductionManager_SAUM.lua</File>
-  		<File>Base/Assets/UI/Replacements/LaunchBar_SAUM.lua</File>
   		<File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SAUM.lua</File>
+      <File>DLC/Expansion2/UI/Replacements/LaunchBar_SAUM_XP2.lua</File>
   		<File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SAUM_XP2.lua</File>
   	</ImportFiles>
 
@@ -109,13 +109,13 @@
     <File>Base/Assets/UI/Additions/IronMaterial.xml</File>
     <File>Base/Assets/UI/Additions/NiterMaterial.lua</File>
     <File>Base/Assets/UI/Additions/NiterMaterial.xml</File>
-    <File>Base/Assets/UI/Additions/HorseMaterial.lua</File>
-    <File>Base/Assets/UI/Additions/HorseMaterial.xml</File>
+    <File>Base/Assets/UI/Additions/HorsesMaterial.lua</File>
+    <File>Base/Assets/UI/Additions/HorsesMaterial.xml</File>
     <File>Base/Assets/Text/StillAUsefulMaterial_general.xml</File>
     <File>Base/Assets/Text/StillAUsefulMaterial_general_de.xml</File>
     <File>Base/Assets/UI/Replacements/ProductionManager_SAUM.lua</File>
-    <File>Base/Assets/UI/Replacements/LaunchBar_SAUM.lua</File>
     <File>Base/Assets/UI/Replacements/Panels/ProductionPanel_SAUM.lua</File>
+    <File>DLC/Expansion2/UI/Replacements/LaunchBar_SAUM_XP2.lua</File>
     <File>DLC/Expansion2/UI/CityBanners/Replacements/CityBannerManager_SAUM_XP2.lua</File>
  </Files>
 </Mod>

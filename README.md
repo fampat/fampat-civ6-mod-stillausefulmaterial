@@ -8,11 +8,11 @@ The intention of this mod is to be able to make use of resources no longer requi
 After a certain amount of iron, niter or horses has been accumulated and the Renaissance era has been reached, you will be able to use these to boost production, science and culture.
 
 The amount of boosts are depending on the amount accumulated.
-At the moment every AI civ is also boosting up to once per turn.
+At the moment every AI civ is also boosting once of each resources per turn, albeit its threshold is higher so it keeps a bigger buffer.
 
 [b]Boostable Resources[/b]
 [u]Iron[/u]
-- Boost ratio: 1 Iron to 1 Production
+- Boost ratio: 1 Iron to 1 Production in one city
 - Minimal amount for boosting is 25, [b]button wont show up else[/b]
 - Minimal era required: Renaissance, [b]button wont show up else[/b]
 - Usable once per turn (no finishing and boosting on the same turn)
@@ -28,12 +28,16 @@ At the moment every AI civ is also boosting up to once per turn.
 - Incase a boost would finish the research, it will consume niter equal to the needed science
 
 [u]Horses[/u]
-- Currently in development
+- Boost ratio: 1 Horse to 1 Culture
+- Minimal amount for boosting is 25, [b]button wont show up else[/b]
+- Minimal era required: Modern, [b]button wont show up else[/b]
+- Usable once per turn (no boosting, trading and boosting again)
+- Its a all or nothing decision, all horses will be consumed for boosting (if possible)
+- Incase a boost would finish the civic, it will consume horses equal to the needed culture
 
 [b]Upcoming[/b]
-- Implementation of horse boosts
 - Adding deeper decision-logic for AI boosting
-- Tweaking if needed
+- Tweaking ratios if needed, please give me some feedback!
 
 [b]Known issues[/b]
 - Currently iam testing all this, it might come to issues, please report!

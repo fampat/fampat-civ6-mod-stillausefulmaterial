@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Context ID="HorsesMaterial" >
+
+  <Stack ID="HorsesCultureBoostStack" Offset="0,-2" Anchor="C,C" StackGrowth="Right" StackPadding="2" />
+
+  <Instance Name="HorsesCultureBoostInstance" >
+    <Button	ID="HorsesCultureBoostButton" Size="40,40" Offset="0,0" Texture="LaunchBar_Hook_ButtonSmall" Anchor="C,C" Style="ButtonDisabledText">
+      <Image ID="HorsesCultureBoostPip" Anchor="L,C" Offset="0,-2" Size="7,7" Texture="LaunchBar_TrackPip" Color="255,255,255,200"/>
+      <Image ID="HorsesCultureBoostIcon" Size="26,26" IconSize="26" Icon="ICON_RESOURCE_HORSES" Anchor="C,C"/>
+    </Button>
+  </Instance>
+
+</Context>

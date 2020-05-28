@@ -5,35 +5,35 @@
 
     <!-- Production panel -->
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP" Language="de_DE">
-  		<Text>Den Eisenvorrat für Ersatzteile und Legierungen nutzen um diese Produktion zu beschleunigen oder fertigzustellen.[NEWLINE]----------[NEWLINE]Verwende {1_Amount_Iron} [ICON_RESOURCE_IRON] um die Produktion für {2_Amount_Production} [ICON_PRODUCTION] zu beschleunigen</Text>
+  		<Text>Produktion beschleunigen[NEWLINE][NEWLINE]Den Eisenvorrat für Ersatzteile und Legierungen nutzen um diese Produktion zu beschleunigen oder fertigzustellen.[NEWLINE]----------[NEWLINE]Verwende {1_Amount_Iron} [ICON_RESOURCE_IRON] um die Produktion für {2_Amount_Production} [ICON_PRODUCTION] zu beschleunigen</Text>
   	</Replace>
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_IRON_BOOSTED_TOOLTIP" Language="de_DE">
-  		<Text>Es wurde bereits eine Produktion in dieser Runde beschleunigt.</Text>
+  		<Text>Produktion beschleunigen[NEWLINE][NEWLINE]Es wurde bereits eine Produktion in dieser Runde beschleunigt.</Text>
   	</Replace>
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_NO_PRODUCTION_TOOPTIP" Language="de_DE">
-  		<Text>Derzeit gibt es keine Produktion die beschleunigt werden könnte.</Text>
+  		<Text>Produktion beschleunigen[NEWLINE][NEWLINE]Derzeit gibt es keine Produktion die beschleunigt werden könnte.</Text>
   	</Replace>
 
     <!-- Research button -->
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_NITER_UNBOOSTED_TOOLTIP" Language="de_DE">
-  		<Text>Den Schießpulvervorrat mit seinen chemische Komponenten nutzen um die Forschung zu beschleunigen oder fertigzustellen.[NEWLINE]----------[NEWLINE]Verwende {1_Amount_Niter} [ICON_RESOURCE_NITER] um die Forschung für {2_Amount_Science} [ICON_SCIENCE] zu beschleunigen</Text>
+  		<Text>Forschung beschleunigen[NEWLINE][NEWLINE]Den Schießpulvervorrat mit seinen chemische Komponenten nutzen um die Forschung zu beschleunigen oder fertigzustellen.[NEWLINE]----------[NEWLINE]Verwende {1_Amount_Niter} [ICON_RESOURCE_NITER] um die Forschung für {2_Amount_Science} [ICON_SCIENCE] zu beschleunigen</Text>
   	</Replace>
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_NITER_BOOSTED_TOOLTIP" Language="de_DE">
-  		<Text>Die Forschung wurde diese Runde bereits beschleunigt.</Text>
+  		<Text>Forschung beschleunigen[NEWLINE][NEWLINE]Die Forschung wurde diese Runde bereits beschleunigt.</Text>
   	</Replace>
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_NO_RESEARCH_TOOPTIP" Language="de_DE">
-  		<Text>Derzeit gibt es keine Forschung die beschleunigt werden könnte, wähle doch eine aus.</Text>
+  		<Text>Forschung beschleunigen[NEWLINE][NEWLINE]Derzeit gibt es keine Forschung die beschleunigt werden könnte, wähle doch eine aus.</Text>
   	</Replace>
 
     <!-- Culture button -->
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_HORSES_UNBOOSTED_TOOLTIP" Language="de_DE">
-  		<Text>Die Pferde für Veranstaltungen und als Gourmet-Lebensmittel nutzen um die Kulturelle entwicklung zu beschleunigen oder fertigzustellen.[NEWLINE]----------[NEWLINE]Verwende {1_Amount_Horses} [ICON_RESOURCE_HORSES] um die kulturelle Entwicklung für {2_Amount_Culture} [ICON_CULTURE] zu beschleunigen</Text>
+  		<Text>Kultur beschleunigen[NEWLINE][NEWLINE]Die Pferde für Veranstaltungen und als Gourmet-Lebensmittel nutzen um die Kulturelle entwicklung zu beschleunigen oder fertigzustellen.[NEWLINE]----------[NEWLINE]Verwende {1_Amount_Horses} [ICON_RESOURCE_HORSES] um die kulturelle Entwicklung für {2_Amount_Culture} [ICON_CULTURE] zu beschleunigen</Text>
   	</Replace>
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_HORSES_BOOSTED_TOOLTIP" Language="de_DE">
-  		<Text>Die kulturelle Entwicklung wurde diese Runde bereits beschleunigt.</Text>
+  		<Text>Kultur beschleunigen[NEWLINE][NEWLINE]Die kulturelle Entwicklung wurde diese Runde bereits beschleunigt.</Text>
   	</Replace>
   	<Replace Tag="LOC_STILLAUSEFULMATERIAL_NO_CIVIC_TOOPTIP" Language="de_DE">
-  		<Text>Derzeit gibt es keine kulturellen Entwicklungen die beschleunigt werden könnte, wähle doch eine aus.</Text>
+  		<Text>Kultur beschleunigen[NEWLINE][NEWLINE]Derzeit gibt es keine kulturellen Entwicklungen die beschleunigt werden könnte, wähle doch eine aus.</Text>
   	</Replace>
   </LocalizedText>
 </GameData>

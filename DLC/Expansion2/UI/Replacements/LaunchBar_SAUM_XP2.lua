@@ -5,7 +5,7 @@
 -- =============================================================================
 
 -- Basegame context
-include("LaunchBar");
+include("LaunchBar_Expansion2.lua");
 
 -- Add a log event for loading this
 print("Loading LaunchBar_SAUM.lua");

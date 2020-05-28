@@ -1,5 +1,5 @@
 -- ================================================
---	StillAUsefulMaterial Niter
+--	StillAUsefulMaterial Horses
 -- ================================================
 
 -- Includes
@@ -9,19 +9,19 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of niter that is required before the button shows up
-local MIN_ERA_INDEX = 5;         -- After reaching the "Industrial"-era the button shows up
-local RESOURCE_ID_NITER = 44;
+local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of horses that is required before the button shows up
+local MIN_ERA_INDEX = 6;         -- After reaching the "Modern"-era the button shows up
+local RESOURCE_ID_HORSES = 42;
 
 -- Variables for handling
 local boostedThisTurn = false;
-local researchCompleted = false;
+local civicCompleted = false;
 
 -- Create an instance of our button
-local niterMaterialBoostButtonIM = InstanceManager:new("NiterResearchBoostInstance", "NiterResearchBoostButton", Controls.NiterResearchBoostStack);
+local horsesMaterialBoostButtonIM = InstanceManager:new("HorsesCultureBoostInstance", "HorsesCultureBoostButton", Controls.HorsesCultureBoostStack);
 
 -- Create the button
-function createNiterMaterialBoostButton()
+function createHorsesMaterialBoostButton()
   -- Get us the local player id
   local localPlayerId = Game.GetLocalPlayer();
 
@@ -33,77 +33,77 @@ function createNiterMaterialBoostButton()
     WriteToLog("Create material boost button!");
 
     -- Freshen up the button
-  	niterMaterialBoostButtonIM:ResetInstances();
-  	local niterResearchBoostInstance = niterMaterialBoostButtonIM:GetInstance();
+  	horsesMaterialBoostButtonIM:ResetInstances();
+  	local horsesCultureBoostInstance = horsesMaterialBoostButtonIM:GetInstance();
 
     -- Default tooltip
     local tooltip = "ERROR_TOOLTIP_NOT_SET";
 
     -- State-dependent tooltip
     if boostedThisTurn then
-      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NITER_BOOSTED_TOOLTIP");
-    elseif (not isPlayerResearching(player) or researchCompleted) then
+      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_HORSES_BOOSTED_TOOLTIP");
+    elseif (not isPlayerDevelopingCulture(player) or civicCompleted) then
       tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NO_RESEARCH_TOOPTIP");
     else
       -- Default value
-      local niterAmountToConsume = 0;
-      local researchToBeCompleted = 0;
+      local horsesAmountToConsume = 0;
+      local cultureToBeCompleted = 0;
 
       -- Fetch values for calculating numbers
-      local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_NITER");
-      local requiredResearchNeeded = getScienceAmountNeededForCompletion(player);
+      local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_HORSES");
+      local requiredCultureNeeded = getCultureAmountNeededForCompletion(player);
 
       -- Do some very complex math...
-      if requiredResearchNeeded <= resourceStockpile then
-        niterAmountToConsume = requiredResearchNeeded;
-        researchToBeCompleted = requiredResearchNeeded;
+      if requiredCultureNeeded <= resourceStockpile then
+        horsesAmountToConsume = requiredCultureNeeded;
+        cultureToBeCompleted = requiredCultureNeeded;
       else
-        niterAmountToConsume = resourceStockpile;
-        researchToBeCompleted = resourceStockpile;
+        horsesAmountToConsume = resourceStockpile;
+        cultureToBeCompleted = resourceStockpile;
       end
       -- ...done
 
       -- Set our tooltip
-      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NITER_UNBOOSTED_TOOLTIP", niterAmountToConsume, researchToBeCompleted);
+      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_HORSES_UNBOOSTED_TOOLTIP", horsesAmountToConsume, cultureToBeCompleted);
     end
 
     -- Set the disabled state
-    local isDisabled = (not isPlayerResearching(player) or researchCompleted or boostedThisTurn);
+    local isDisabled = (not isPlayerDevelopingCulture(player) or civicCompleted or boostedThisTurn);
 
   	-- Set button data and action handler
-  	niterResearchBoostInstance.NiterResearchBoostButton:SetDisabled(isDisabled);
-  	niterResearchBoostInstance.NiterResearchBoostIcon:SetAlpha((isDisabled and 0.65) or 1);
-  	niterResearchBoostInstance.NiterResearchBoostButton:SetToolTipString(tooltip);
+  	horsesCultureBoostInstance.HorsesCultureBoostButton:SetDisabled(isDisabled);
+  	horsesCultureBoostInstance.HorsesCultureBoostIcon:SetAlpha((isDisabled and 0.65) or 1);
+  	horsesCultureBoostInstance.HorsesCultureBoostButton:SetToolTipString(tooltip);
 
     -- Callback function
-  	niterResearchBoostInstance.NiterResearchBoostButton:RegisterCallback(Mouse.eLClick,
+  	horsesCultureBoostInstance.HorsesCultureBoostButton:RegisterCallback(Mouse.eLClick,
   		function(void1, void2)
         -- Our callback plays sound, boost and refreshens the button
   			UI.PlaySound("Play_UI_Click");
 
         -- Execute the boost
-        boostResearchWithNiter(player);
+        boostCultureWithHorses(player);
 
         -- Memorize state
         boostedThisTurn = true;
 
         -- Refresh the button in "used"-state
-        refreshNiterMaterialBoostButton();
+        refreshHorsesMaterialBoostButton();
   		end
   	);
   end
 end
 
 -- Refresh out button on the UI
-function refreshNiterMaterialBoostButton()
-  detachNiterMaterialBoostButton();
-  attachNiterMaterialBoostBotton();
+function refreshHorsesMaterialBoostButton()
+  detachHorsesMaterialBoostButton();
+  attachHorsesMaterialBoostBotton();
 end
 
--- Attach our button to the research-panel
-function attachNiterMaterialBoostBotton()
+-- Attach our button to the culture-panel
+function attachHorsesMaterialBoostBotton()
   -- Log me a message darling
-  WriteToLog("Attaching niter material boost button...");
+  WriteToLog("Attaching horses material boost button...");
 
   -- Get the local player
   local localPlayer = Players[Game.GetLocalPlayer()];
@@ -111,9 +111,9 @@ function attachNiterMaterialBoostBotton()
   -- Player is real?
   if localPlayer ~= nil then
     -- If is possible to attach, we will see
-    if isBoostWithNiterPossible(localPlayer) or boostedThisTurn then
+    if isBoostWithHorsesPossible(localPlayer) or boostedThisTurn then
       -- Create the button
-      createNiterMaterialBoostButton();
+      createHorsesMaterialBoostButton();
 
       -- Get ui control where we wanna add our button to
       local buttonStack = ContextPtr:LookUpControl("/InGame/LaunchBar/ButtonStack");
@@ -121,26 +121,26 @@ function attachNiterMaterialBoostBotton()
       -- There should only be a single child!
       if buttonStack ~= nil then
         -- Rebase our ui-button to the new parent
-        Controls.NiterResearchBoostStack:ChangeParent(buttonStack);
+        Controls.HorsesCultureBoostStack:ChangeParent(buttonStack);
 
         -- Fetch the stacks children
         local buttonStackChildren = buttonStack:GetChildren();
 
-        -- Default stack science button index
-        local buttonStackScienceIndex = 2;
+        -- Default stack culture button index
+        local buttonStackCultureIndex = 2;
 
         -- Loop the stacks children
         for buttonStackChildrenIndex, buttonStackChildren in pairs(buttonStackChildren) do
-            -- Watch out for the science button
-            if buttonStackChildren:GetID() == "ScienceButton" then
+            -- Watch out for the culture button
+            if buttonStackChildren:GetID() == "CultureButton" then
               -- Found it
-              buttonStackScienceIndex = buttonStackChildrenIndex;
+              buttonStackCultureIndex = buttonStackChildrenIndex;
               break;
             end
         end
 
-        -- Attach at specified index after research button
-        buttonStack:AddChildAtIndex(Controls.NiterResearchBoostStack, buttonStackScienceIndex);
+        -- Attach at specified index after culture button
+        buttonStack:AddChildAtIndex(Controls.HorsesCultureBoostStack, buttonStackCultureIndex);
 
         -- Call a refresh on the launch-bar size
         LuaEvents.RefreshLaunchBar();
@@ -162,41 +162,41 @@ function attachNiterMaterialBoostBotton()
 end
 
 -- Remove our button
-function detachNiterMaterialBoostButton()
-  niterMaterialBoostButtonIM:DestroyInstances();
+function detachHorsesMaterialBoostButton()
+  horsesMaterialBoostButtonIM:DestroyInstances();
   WriteToLog("Detached material boost button!");
 end
 
--- The actual science boost action takes place here
-function boostResearchWithNiter(player)
+-- The actual culture boost action takes place here
+function boostCultureWithHorses(player)
   -- But only with real player
   if player ~= nil then
     local playerId = player:GetID();
 
     -- Fetch the stockpile of the player, and the current production state
-    local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_NITER");
-    local requiredScienceNeeded = getScienceAmountNeededForCompletion(player);
+    local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_HORSES");
+    local requiredCultureNeeded = getCultureAmountNeededForCompletion(player);
 
     -- Calc variable
     local substractedMaterial = 0;
 
-    -- In case we have more niter that it would cost, complete it!
-    -- And save some precious niter
-    if requiredScienceNeeded <= resourceStockpile then
-      -- Finish science, substract resource equl production-cost
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToResearch(playerId, requiredScienceNeeded);
-      substractedMaterial = requiredScienceNeeded;
+    -- In case we have more horses that it would cost, complete it!
+    -- And save some precious horses
+    if requiredCultureNeeded <= resourceStockpile then
+      -- Finish culture, substract resource equl production-cost
+      ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic(playerId, requiredCultureNeeded);
+      substractedMaterial = requiredCultureNeeded;
     else
-      -- Add to science, substract entire resources
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToResearch(playerId, resourceStockpile);
+      -- Add to culture, substract entire resources
+      ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic(playerId, resourceStockpile);
       substractedMaterial = resourceStockpile;
     end
 
     -- Here we call out big brother for help!
-    ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount(playerId, GameInfo.Resources["RESOURCE_NITER"].Index, -substractedMaterial);
+    ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount(playerId, GameInfo.Resources["RESOURCE_HORSES"].Index, -substractedMaterial);
 
     -- Logging logging logging
-    WriteToLog("BOOSTed research with niter cost: "..substractedMaterial);
+    WriteToLog("BOOSTed culture with horses cost: "..substractedMaterial);
   else
     -- Also here we do our logging :)
     WriteToLog("BOOST not possible, no player selected!");
@@ -204,22 +204,22 @@ function boostResearchWithNiter(player)
 end
 
 -- Helper to check if a player is able to use the boost
-function isBoostWithNiterPossible(player)
+function isBoostWithHorsesPossible(player)
   -- He need to be in the right era!
   if hasRequiredEra(player, MIN_ERA_INDEX) then
     local playerResources = player:GetResources();
 
-    -- He will need niter to make it work!
+    -- He will need horses to make it work!
     for resource in GameInfo.Resources() do
       if (resource.ResourceClassType == "RESOURCECLASS_STRATEGIC") then
-        if resource.ResourceType == "RESOURCE_NITER" then
+        if resource.ResourceType == "RESOURCE_HORSES" then
           -- Get the players stock
-          local niterStockpileAmount = playerResources:GetResourceAmount(resource.ResourceType);
+          local horsesStockpileAmount = playerResources:GetResourceAmount(resource.ResourceType);
 
-          -- If enough niter is present, allow him to boost!
-          if niterStockpileAmount >= MIN_AMOUNT_FOR_BOOST then
+          -- If enough horses is present, allow him to boost!
+          if horsesStockpileAmount >= MIN_AMOUNT_FOR_BOOST then
             -- I wanna know what happens there!
-            WriteToLog("Boost with niter is possible for player: "..player:GetID()..", with niter: "..niterStockpileAmount);
+            WriteToLog("Boost with horses is possible for player: "..player:GetID()..", with horses: "..horsesStockpileAmount);
             return true;
           end
 
@@ -230,15 +230,15 @@ function isBoostWithNiterPossible(player)
   end
 
   -- Transparency!
-  WriteToLog("Boost with niter is NOT possible for player: "..player:GetID());
+  WriteToLog("Boost with horses is NOT possible for player: "..player:GetID());
   return false;
 end
 
 -- AIs will also get a boost if they can afford it
 -- TODO: Implement descision-making for more intelligent boosting, eg.
 --       if military production exist, boost that instead of a settler.
-function TakeAIActionsForNiterBoost()
-  WriteToLog("AIs science boosting begun!");
+function TakeAIActionsForHorsesBoost()
+  WriteToLog("AIs culture boosting begun!");
 
   -- Get alive players (only major civs)
 	local players = Game.GetPlayers{Alive = true, Major = true};
@@ -256,13 +256,13 @@ function TakeAIActionsForNiterBoost()
     -- Is the player an AI?
     if (player ~= nil and not player:IsHuman() and not player:IsBarbarian()) then
       -- Is boosting possible for this player?
-      if isBoostWithNiterPossible(player) and isPlayerResearching(player) then
+      if isBoostWithHorsesPossible(player) and isPlayerDevelopingCulture(player) then
         -- Actual boost
-        boostResearchWithNiter(player);
+        boostCultureWithHorses(player);
 
         -- Logging to make clear what the AI is getting
         local AIPlayerConfiguration = PlayerConfigurations[player:GetID()];
-        WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted his science!");
+        WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted his culture!");
       end
     end
 	end
@@ -273,43 +273,44 @@ end
 
 -- Get triggered on player resource changes
 function OnPlayerResourceChanged(playerId, resourceTypeId)
-  -- Local player niter amount changed...
-  if playerId == Game.GetLocalPlayer() and resourceTypeId == RESOURCE_ID_NITER then  -- Niter
+  -- Local player horses amount changed...
+  if playerId == Game.GetLocalPlayer() and resourceTypeId == RESOURCE_ID_HORSES then  -- Horses
     -- ..refresh the button
-    refreshNiterMaterialBoostButton();
+    refreshHorsesMaterialBoostButton();
   end
 end
 
 -- Event handle
-function OnResearchChanged(playerId)
-  -- Local player niter amount changed...
+function OnCivicChanged(playerId)
+  -- Local player horses amount changed...
   if playerId == Game.GetLocalPlayer() then
-    -- Flag research as uncompleted
-    researchCompleted = false;
+    -- Flag culture as uncompleted
+    civicCompleted = false;
 
     -- Refresh the button
-    refreshNiterMaterialBoostButton();
+    refreshHorsesMaterialBoostButton();
   end
 end
 
 -- Event handle
-function OnResearchCompleted(playerId)
-  -- Local player niter amount changed...
+function OnCivicCompleted(playerId)
+  -- Local player horses amount changed...
   if playerId == Game.GetLocalPlayer() then
-    -- Flag research als completed
-    researchCompleted = true;
+    -- Flag culture als completed
+    civicCompleted = true;
 
     -- Refresh the button
-    refreshNiterMaterialBoostButton();
+    refreshHorsesMaterialBoostButton();
   end
 end
 
 -- Event handle
 function OnLocalPlayerTurnEnd()
-  -- Flag research as uncompleted
-  researchCompleted = false;
+  -- Flag culture as uncompleted
+  civicCompleted = false;
 end
 
+-- Local player starts turn!
 function OnLocalPlayerTurnBegin()
   -- We need to know everything
   WriteToLog("Turn begins, boosted value has been reset!");
@@ -318,15 +319,16 @@ function OnLocalPlayerTurnBegin()
   boostedThisTurn = false;
 
   -- Refresh
-  refreshNiterMaterialBoostButton();
+  refreshHorsesMaterialBoostButton();
 end
 
 -- Thinigs that happen when the turn starts
 function OnTurnBegin()
   -- Its AIs turn to boost baby!
-  TakeAIActionsForNiterBoost();
+  TakeAIActionsForHorsesBoost();
 end
 
+-- Inilizer!
 function Initialize()
   -- Trigger a boosting button refresh onload
   Events.LoadGameViewStateDone.Add(OnLocalPlayerTurnBegin);
@@ -343,11 +345,11 @@ function Initialize()
   -- Listen to resource changes
   Events.PlayerResourceChanged.Add(OnPlayerResourceChanged);
 
-  -- Listen for research changes
-  Events.ResearchChanged.Add(OnResearchChanged);
+  -- Listen for civic changes
+  Events.CivicChanged.Add(OnCivicChanged);
 
-  -- Listen for researches completed
-  Events.ResearchCompleted.Add(OnResearchCompleted);
+  -- Listen for civic completed
+  Events.CivicCompleted.Add(OnCivicCompleted);
 
   -- Hmm... what might this be good for?
   print("Initialize");
