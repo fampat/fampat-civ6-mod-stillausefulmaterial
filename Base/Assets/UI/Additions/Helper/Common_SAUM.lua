@@ -154,6 +154,32 @@ function hasRequiredEra(player, era)
   return (pEra.ChronologyIndex >= era);
 end
 
+-- Checks if the player is an AI civ
+function isAI(player)
+  return (player ~= nil and not player:IsHuman() and not player:IsBarbarian());
+end
+
+-- Get the game-speed multipler for scaling purpose
+function getGameSpeedMultiplier()
+  local gameSpeedType = GameConfiguration.GetGameSpeedType();
+  local speedCostMultiplier = GameInfo.GameSpeeds[gameSpeedType].CostMultiplier;
+  return (speedCostMultiplier / 100);
+end
+
+-- Rounding numbers helper
+function roundNumber(num, numDecimalPlaces)
+  if numDecimalPlaces and numDecimalPlaces > 0 then
+    local mult = 10^numDecimalPlaces
+    return math.floor(num * mult + 0.5) / mult
+  end
+  return math.ceil(num + 0.5)
+end
+
+-- Convert a absolute number to a game-speed-scaled version
+function scaleWithGameSpeed(number)
+  return roundNumber((number * getGameSpeedMultiplier()), 1);
+end
+
 -- Debug function for logging
 function WriteToLog(message)
 	if (debugMode and message ~= nil) then

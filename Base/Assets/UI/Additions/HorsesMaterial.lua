@@ -9,8 +9,10 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of horses that is required before the button shows up
-local MIN_ERA_INDEX = 6;         -- After reaching the "Modern"-era the button shows up
+local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of horses that is required before the button shows up (25)
+local MIN_ERA_INDEX = 6;         -- After reaching the "Modern"-era the button shows up (6)
+local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
+local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
 local RESOURCE_ID_HORSES = 42;
 
 -- Variables for handling
@@ -54,7 +56,7 @@ function createHorsesMaterialBoostButton()
       local requiredCultureNeeded = getCultureAmountNeededForCompletion(player);
 
       -- Do some very complex math...
-      if requiredCultureNeeded <= resourceStockpile then
+      if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile) then
         horsesAmountToConsume = requiredCultureNeeded;
         cultureToBeCompleted = requiredCultureNeeded;
       else
@@ -64,7 +66,7 @@ function createHorsesMaterialBoostButton()
       -- ...done
 
       -- Set our tooltip
-      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_HORSES_UNBOOSTED_TOOLTIP", horsesAmountToConsume, cultureToBeCompleted);
+      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_HORSES_UNBOOSTED_TOOLTIP", math.ceil(horsesAmountToConsume), scaleWithGameSpeed(cultureToBeCompleted));
     end
 
     -- Set the disabled state
@@ -182,13 +184,24 @@ function boostCultureWithHorses(player)
 
     -- In case we have more horses that it would cost, complete it!
     -- And save some precious horses
-    if requiredCultureNeeded <= resourceStockpile then
+    if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile) then
       -- Finish culture, substract resource equl production-cost
       ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic(playerId, requiredCultureNeeded);
       substractedMaterial = requiredCultureNeeded;
     else
+      -- The AI will want to keep its threshold
+      if isAI(Players[ownerId]) then
+        local thresholdedAIResourceStock = resourceStockpile - AI_THESHOLD;
+
+        -- AI Boost logging
+        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
+
+        -- Thresholded AI resource stock
+        resourceStockpile = thresholdedAIResourceStock;
+      end
+
       -- Add to culture, substract entire resources
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic(playerId, resourceStockpile);
+      ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic(playerId, scaleWithGameSpeed(resourceStockpile));
       substractedMaterial = resourceStockpile;
     end
 
@@ -248,13 +261,14 @@ function TakeAIActionsForHorsesBoost()
   local MIN_ERA_INDEX_BAK = MIN_ERA_INDEX;
 
   -- AI does to all this a bit later, we dont wanna criple it
-  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST + 10; -- Tweaked amount for AI
-  MIN_ERA_INDEX = MIN_ERA_INDEX + 0;                -- Tweaked era for AI (disabled atm, needs more testing)
+  -- These values get checked in the boost-function
+  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST + AI_THESHOLD;
+  MIN_ERA_INDEX = MIN_ERA_INDEX + AI_ADD_ERA;
 
 	-- Player is real?
 	for _, player in ipairs(players) do
     -- Is the player an AI?
-    if (player ~= nil and not player:IsHuman() and not player:IsBarbarian()) then
+    if isAI(player) then
       -- Is boosting possible for this player?
       if isBoostWithHorsesPossible(player) and isPlayerDevelopingCulture(player) then
         -- Actual boost
@@ -267,6 +281,7 @@ function TakeAIActionsForHorsesBoost()
     end
 	end
 
+  -- Restore default values
   MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST_BAK;
   MIN_ERA_INDEX = MIN_ERA_INDEX_BAK;
 end

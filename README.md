@@ -8,11 +8,12 @@ The intention of this mod is to be able to make use of resources no longer requi
 After a certain amount of iron, niter or horses has been accumulated and the Renaissance era has been reached, you will be able to use these to boost production, science and culture.
 
 The amount of boosts are depending on the amount accumulated.
-At the moment every AI civ is also boosting once of each resources per turn, albeit its threshold is higher so it keeps a bigger buffer.
+Every AI civ is also boosting once per turn with each resources, if it has 25 plus a certain threshold.
+The AI needs that threshold to make sure it always has some materials laying around for using or trading it.
 
 [b]Boostable Resources[/b]
 [u]Iron[/u]
-- Boost ratio: 1 Iron to 1 Production in one city
+- Boost ratio: 1 Iron to 1 Production in one city on default game-speed (scales with game-speed)
 - Minimal amount for boosting is 25, [b]button wont show up else[/b]
 - Minimal era required: Renaissance, [b]button wont show up else[/b]
 - Usable once per turn (no finishing and boosting on the same turn)
@@ -20,7 +21,7 @@ At the moment every AI civ is also boosting once of each resources per turn, alb
 - Incase a boost would finish the production, it will consume iron equal to the needed production
 
 [u]Niter[/u]
-- Boost ratio: 1 Niter to 1 Science
+- Boost ratio: 1 Niter to 1 Science on default game-speed (scales with game-speed)
 - Minimal amount for boosting is 25, [b]button wont show up else[/b]
 - Minimal era required: Industrial, [b]button wont show up else[/b]
 - Usable once per turn (no boosting, trading and boosting again)
@@ -28,7 +29,7 @@ At the moment every AI civ is also boosting once of each resources per turn, alb
 - Incase a boost would finish the research, it will consume niter equal to the needed science
 
 [u]Horses[/u]
-- Boost ratio: 1 Horse to 1 Culture
+- Boost ratio: 1 Horse to 1 Culture on default game-speed (scales with game-speed)
 - Minimal amount for boosting is 25, [b]button wont show up else[/b]
 - Minimal era required: Modern, [b]button wont show up else[/b]
 - Usable once per turn (no boosting, trading and boosting again)
@@ -36,7 +37,7 @@ At the moment every AI civ is also boosting once of each resources per turn, alb
 - Incase a boost would finish the civic, it will consume horses equal to the needed culture
 
 [b]Upcoming[/b]
-- Adding deeper decision-logic for AI boosting
+- Adding deeper decision-logic for AI production boosting
 - Tweaking ratios if needed, please give me some feedback!
 
 [b]Known issues[/b]

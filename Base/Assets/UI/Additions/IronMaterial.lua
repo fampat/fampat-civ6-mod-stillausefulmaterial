@@ -9,8 +9,10 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of iron that is required before the button shows up
-local MIN_ERA_INDEX = 4;         -- After reaching the "Renaissance"-era the button shows up
+local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of iron that is required before the button shows up (25)
+local MIN_ERA_INDEX = 4;         -- After reaching the "Renaissance"-era the button shows up (4)
+local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
+local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
 
 -- Mirrored in ProductionPanel
 local LISTMODE = {PRODUCTION = 1, PURCHASE_GOLD = 2, PURCHASE_FAITH = 3, PROD_QUEUE = 4};
@@ -49,7 +51,7 @@ function createIronMaterialBoostButton()
     local requiredProductionNeeded = getProductionAmountNeededForCompletion(selectedCity);
 
     -- Do some very complex math...
-    if requiredProductionNeeded <= resourceStockpile then
+    if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile) then
       ironAmountToConsume = requiredProductionNeeded;
       productionToBeCompleted = requiredProductionNeeded;
     else
@@ -59,7 +61,7 @@ function createIronMaterialBoostButton()
     -- ...done
 
     -- Set our tooltip
-    tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP", ironAmountToConsume, productionToBeCompleted);
+    tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP", math.ceil(ironAmountToConsume), scaleWithGameSpeed(productionToBeCompleted));
   end
 
   -- Set the disabled state
@@ -203,13 +205,24 @@ function boostProductionInCityWithIron(city)
 
     -- In case we have more iron that it would cost, complete it!
     -- And save some precious iron
-    if requiredProductionNeeded <= resourceStockpile then
+    if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile) then
       -- Finish production, substract resource equl production-cost
       ExposedMembers.MOD_StillAUsefulMaterial.CompleteProduction(ownerId, cityId);
       substractedMaterial = requiredProductionNeeded;
     else
+      -- The AI will want to keep its threshold
+      if isAI(Players[ownerId]) then
+        local thresholdedAIResourceStock = resourceStockpile - AI_THESHOLD;
+
+        -- AI Boost logging
+        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
+
+        -- Thresholded AI resource stock
+        resourceStockpile = thresholdedAIResourceStock;
+      end
+
       -- Add to production, substract entire resources
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToProduction(ownerId, cityId, resourceStockpile);
+      ExposedMembers.MOD_StillAUsefulMaterial.AddToProduction(ownerId, cityId, scaleWithGameSpeed(resourceStockpile));
       substractedMaterial = resourceStockpile;
     end
 
@@ -328,14 +341,15 @@ function TakeAIActionsForIronBoost()
   local MIN_AMOUNT_FOR_BOOST_BAK = MIN_AMOUNT_FOR_BOOST;
   local MIN_ERA_INDEX_BAK = MIN_ERA_INDEX;
 
-  -- AI does to all this a bit later, we dont wanna criple it
-  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST + 10; -- Tweaked amount for AI
-  MIN_ERA_INDEX = MIN_ERA_INDEX + 0;                -- Tweaked era for AI (disabled atm, needs more testing)
+  -- AI does to all this a bit different
+  -- These values get checked in the boost-function
+  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST + AI_THESHOLD;
+  MIN_ERA_INDEX = MIN_ERA_INDEX + AI_ADD_ERA;
 
 	-- Player is real?
 	for _, player in ipairs(players) do
     -- Is the player an AI?
-    if (player ~= nil and not player:IsHuman() and not player:IsBarbarian()) then
+    if isAI(player) then
       -- Is boostint possible for this player?
       if isBoostWithIronPossible(player) then
         local pCities = player:GetCities();
@@ -356,6 +370,7 @@ function TakeAIActionsForIronBoost()
     end
 	end
 
+  -- Restore default values
   MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST_BAK;
   MIN_ERA_INDEX = MIN_ERA_INDEX_BAK;
 end
