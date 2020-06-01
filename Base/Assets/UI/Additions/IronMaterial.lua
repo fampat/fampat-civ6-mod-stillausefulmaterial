@@ -9,10 +9,12 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 5; -- Amount of iron that is required before the button shows up (25)
-local MIN_ERA_INDEX = 1;         -- After reaching the "Renaissance"-era the button shows up (4)
+local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of iron that is required before the button shows up (25)
+local MIN_ERA_INDEX = 4;         -- After reaching the "Renaissance"-era the button shows up (4)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
+local RESOURCE_ID_IRON = 43;
+local NOTIFY_ICON = 96;
 
 -- Mirrored in ProductionPanel
 local LISTMODE = {PRODUCTION = 1, PURCHASE_GOLD = 2, PURCHASE_FAITH = 3, PROD_QUEUE = 4};
@@ -23,6 +25,7 @@ local ironMaterialBoostButtonIM = InstanceManager:new("IronProductionBoostInstan
 -- Variables for handling
 local boostedThisTurn = false;
 local selectedCity = nil;
+local notifyIfReady = true;
 
 -- Create the button
 function createIronMaterialBoostButton()
@@ -86,6 +89,9 @@ function createIronMaterialBoostButton()
 
       -- Refresh the button in "used"-state
       refreshIronMaterialBoostButton();
+
+      -- Re-enable notification
+      notifyIfReady = true;
 		end
 	);
 end
@@ -330,11 +336,28 @@ end
 
 -- Thinigs that happen when the local player turn starts
 function OnLocalPlayerTurnBegin()
+  -- Who are we?
+  local localPlayer = Players[Game.GetLocalPlayer()];
+
   -- Reset boosted stat
   boostedThisTurn = false;
 
   -- Button not needed here
   detachIronMaterialBoostButton();
+
+  -- Notify the player
+  if notifyIfReady and isBoostWithIronPossible(localPlayer) then
+    -- Send notification
+    notify(
+      localPlayer,
+      NOTIFY_ICON,
+      Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
+      Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
+    );
+
+    -- Prevent spam
+    notifyIfReady = false;
+  end
 
   -- We need to know everything
   WriteToLog("Turn begins, boosted value has been reset!");
@@ -393,6 +416,26 @@ function TakeAIActionsForIronBoost()
   MIN_ERA_INDEX = MIN_ERA_INDEX_BAK;
 end
 
+-- Get triggered on player resource changes
+function OnPlayerResourceChanged(playerId, resourceTypeId)
+  -- Local player niter amount changed...
+  if playerId == Game.GetLocalPlayer() and resourceTypeId == RESOURCE_ID_IRON then  -- Iron
+    -- Notify if needed
+    if notifyIfReady and isBoostWithIronPossible(Players[localPlayer]) then
+      -- Send notification
+      notify(
+        localPlayer,
+        NOTIFY_ICON,
+        Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
+        Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
+      );
+
+      -- Prevent spam
+      notifyIfReady = false;
+    end
+  end
+end
+
 -- Initialization stuffs
 function Initialize()
   -- Listen to when production tabs get changed
@@ -404,6 +447,9 @@ function Initialize()
 
   -- Trigger a boosting reset and UI handling
   Events.LocalPlayerTurnBegin.Add(OnLocalPlayerTurnBegin);
+
+  -- Listen to resource changes
+  Events.PlayerResourceChanged.Add(OnPlayerResourceChanged);
 
   -- Trigger a boosting reset and the AI handling
   Events.TurnBegin.Add(OnTurnBegin);

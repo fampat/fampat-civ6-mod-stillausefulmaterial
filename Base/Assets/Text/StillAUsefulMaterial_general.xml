@@ -3,6 +3,14 @@
   <BaseGameText>
     <!-- ENGLISH -->
 
+    <!-- General -->
+    <Row Tag="LOC_SAUM_BOOST_READY_HEADLINE">
+      <Text>Boosting is now possible.</Text>
+    </Row>
+    <Row Tag="LOC_SAUM_BOOST_READY_CONTENT">
+      <Text>At least one of your boosting options became available.</Text>
+    </Row>
+
     <!-- Production panel -->
   	<Row Tag="LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP">
   		<Text>Boost production[NEWLINE][NEWLINE]Use up to all of your iron for spare-parts and alloys to boost or finish this production.[NEWLINE]----------[NEWLINE]Use {1_Amount_Iron} [ICON_RESOURCE_IRON] to boost for {2_Amount_Production} [ICON_PRODUCTION]</Text>
@@ -12,6 +20,12 @@
   	</Row>
   	<Row Tag="LOC_STILLAUSEFULMATERIAL_NO_PRODUCTION_TOOPTIP">
   		<Text>Boost production[NEWLINE][NEWLINE]No production to boost right now.</Text>
+  	</Row>
+  	<Row Tag="LOC_SAUM_IRON_BOOST_READY_HEADLINE">
+  		<Text>Boosting production now possible.</Text>
+  	</Row>
+  	<Row Tag="LOC_SAUM_IRON_BOOST_READY_CONTENT">
+  		<Text>You can now boost your production in a city with the spare-parts and alloys made from iron.</Text>
   	</Row>
 
     <!-- Research button -->
@@ -24,6 +38,12 @@
   	<Row Tag="LOC_STILLAUSEFULMATERIAL_NO_RESEARCH_TOOPTIP">
   		<Text>Boost research[NEWLINE][NEWLINE]No research to boost right now, consider selecting one.</Text>
   	</Row>
+  	<Row Tag="LOC_SAUM_NITER_BOOST_READY_HEADLINE">
+  		<Text>Boosting research now possible.</Text>
+  	</Row>
+  	<Row Tag="LOC_SAUM_NITER_BOOST_READY_CONTENT">
+  		<Text>You can now boost your science with the chemical components from niter.</Text>
+  	</Row>
 
     <!-- Culture button -->
   	<Row Tag="LOC_STILLAUSEFULMATERIAL_HORSES_UNBOOSTED_TOOLTIP">
@@ -34,6 +54,12 @@
   	</Row>
   	<Row Tag="LOC_STILLAUSEFULMATERIAL_NO_CIVIC_TOOPTIP">
   		<Text>Boost culture[NEWLINE][NEWLINE]No cultural development to boost right now, consider selecting one.</Text>
+  	</Row>
+    <Row Tag="LOC_SAUM_HORSES_BOOST_READY_HEADLINE">
+  		<Text>Boosting culture now possible.</Text>
+  	</Row>
+  	<Row Tag="LOC_SAUM_HORSES_BOOST_READY_CONTENT">
+  		<Text>You can now boost your cultural development with horse-farms and gourmet-restaurants.</Text>
   	</Row>
   </BaseGameText>
 </GameData>

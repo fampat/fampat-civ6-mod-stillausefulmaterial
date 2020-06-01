@@ -9,8 +9,8 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 5; -- Amount of niter that is required before the button shows up (25)
-local MIN_ERA_INDEX = 1;         -- After reaching the "Industrial"-era the button shows up (5)
+local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of niter that is required before the button shows up (25)
+local MIN_ERA_INDEX = 5;         -- After reaching the "Industrial"-era the button shows up (5)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
 local RESOURCE_ID_NITER = 44;
@@ -18,6 +18,7 @@ local RESOURCE_ID_NITER = 44;
 -- Variables for handling
 local boostedThisTurn = false;
 local researchCompleted = false;
+local notifyIfReady = true;
 
 -- Create an instance of our button
 local niterMaterialBoostButtonIM = InstanceManager:new("NiterResearchBoostInstance", "NiterResearchBoostButton", Controls.NiterResearchBoostStack);
@@ -114,6 +115,20 @@ function attachNiterMaterialBoostBotton()
   if localPlayer ~= nil then
     -- If is possible to attach, we will see
     if isBoostWithNiterPossible(localPlayer) or boostedThisTurn then
+      -- Notify the player
+      if notifyIfReady then
+        -- Send notification
+        notify(
+          localPlayer,
+          96,
+          Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
+          Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
+        );
+
+        -- Prevent spam
+        notifyIfReady = false;
+      end
+
       -- Create the button
       createNiterMaterialBoostButton();
 
@@ -343,6 +358,12 @@ end
 function OnLocalPlayerTurnBegin()
   -- We need to know everything
   WriteToLog("Turn begins, boosted value has been reset!");
+
+  -- Reset boost notification...
+  if boostedThisTurn then
+    -- ...if the button has been used
+    notifyIfReady = true;
+  end
 
   -- Reset boosted stat
   boostedThisTurn = false;

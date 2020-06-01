@@ -37,12 +37,11 @@ The AI needs that threshold to make sure it always has some materials laying aro
 - Incase a boost would finish the civic, it will consume horses equal to the needed culture
 
 [b]Upcoming[/b]
-- Adding deeper decision-logic for AI production boosting
-- Tweaking ratios if needed, please give me some feedback!
+- Improving the player-notification when a boost has come available
+- Deeper decision-logic for AI production boosting (AI-weights)
 
 [b]Known issues[/b]
-- Currently iam testing all this, it might come to issues, please report!
-- Especially the boost-ratios might need to be tweaked, please leave me your comments!
+- None known right now :)
 
 [b]Game-Versions & Localization[/b]
 Works only with Gathering-Storm.
@@ -61,3 +60,4 @@ Support is welcome, but not necessary!
 - "Gift It To Me" - https://steamcommunity.com/sharedfiles/filedetails/?id=1683750352
 - "At A Glance UI" - https://steamcommunity.com/sharedfiles/filedetails/?id=1683762658
 - "FortifAI" - https://steamcommunity.com/sharedfiles/filedetails/?id=1683757675
+- "Even It Out" - Upcoming balance changes and scaling difficulties

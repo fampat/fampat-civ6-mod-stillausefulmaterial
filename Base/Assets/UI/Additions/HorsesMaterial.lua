@@ -9,8 +9,8 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 5; -- Amount of horses that is required before the button shows up (25)
-local MIN_ERA_INDEX = 1;         -- After reaching the "Modern"-era the button shows up (6)
+local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of horses that is required before the button shows up (25)
+local MIN_ERA_INDEX = 6;         -- After reaching the "Modern"-era the button shows up (6)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
 local RESOURCE_ID_HORSES = 42;
@@ -18,6 +18,7 @@ local RESOURCE_ID_HORSES = 42;
 -- Variables for handling
 local boostedThisTurn = false;
 local civicCompleted = false;
+local notifyIfReady = true;
 
 -- Create an instance of our button
 local horsesMaterialBoostButtonIM = InstanceManager:new("HorsesCultureBoostInstance", "HorsesCultureBoostButton", Controls.HorsesCultureBoostStack);
@@ -114,6 +115,20 @@ function attachHorsesMaterialBoostBotton()
   if localPlayer ~= nil then
     -- If is possible to attach, we will see
     if isBoostWithHorsesPossible(localPlayer) or boostedThisTurn then
+      -- Notify the player
+      if notifyIfReady then
+        -- Send notification
+        notify(
+          localPlayer,
+          96,
+          Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
+          Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
+        );
+
+        -- Prevent spam
+        notifyIfReady = false;
+      end
+
       -- Create the button
       createHorsesMaterialBoostButton();
 
@@ -174,6 +189,7 @@ function boostCultureWithHorses(player)
   -- But only with real player
   if player ~= nil then
     local playerId = player:GetID();
+    local localPlayer = Game.GetLocalPlayer();
 
     -- Fetch the stockpile of the player, and the current production state
     local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_HORSES");
@@ -186,7 +202,7 @@ function boostCultureWithHorses(player)
     -- And save some precious horses
     if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile) then
       -- Game-event callback to add civic, substract resource equal to production-cost
-    	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+    	UI.RequestPlayerOperation(localPlayer, PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToCivic",
         playerId = playerId,
         amount = requiredCultureNeeded
@@ -207,7 +223,7 @@ function boostCultureWithHorses(player)
       end
 
       -- Game-event callback to add culture, substract resource equal to production-cost
-    	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+    	UI.RequestPlayerOperation(localPlayer, PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToCivic",
         playerId = playerId,
         amount = scaleWithGameSpeed(resourceStockpile)
@@ -218,7 +234,7 @@ function boostCultureWithHorses(player)
     end
 
     -- Game-event callback to change resource-count on player
-    UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+    UI.RequestPlayerOperation(localPlayer, PlayerOperations.EXECUTE_SCRIPT, {
       OnStart = "ChangeResourceAmount",
       playerId = playerId,
       resourceIndex = GameInfo.Resources["RESOURCE_HORSES"].Index,
@@ -346,6 +362,12 @@ end
 function OnLocalPlayerTurnBegin()
   -- We need to know everything
   WriteToLog("Turn begins, boosted value has been reset!");
+
+  -- Reset boost notification...
+  if boostedThisTurn then
+    -- ...if the button has been used
+    notifyIfReady = true;
+  end
 
   -- Reset boosted stat
   boostedThisTurn = false;

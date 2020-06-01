@@ -5,6 +5,18 @@
 -- Debugging mode switch
 local debugMode = true;
 
+function notify(localPlayer, icon, headline, content)
+  -- Fetch the notified players capital
+  local localPlayerCapital = localPlayer:GetCities():GetCapitalCity();
+
+  -- Get the notification headline from locales
+  local notificationHeadline = Locale.Lookup(headline);
+  local notificationContent = Locale.Lookup(content);
+
+  -- The actual notification we send out
+  NotificationManager.SendNotification(localPlayer:GetID(), icon, notificationHeadline, notificationContent, localPlayerCapital:GetX(), localPlayerCapital:GetY());
+end
+
 -- Helper to check if a city is currently producing something
 function isCityProducing(city)
   return (getProductionAmountNeededForCompletion(city) ~= 0);
