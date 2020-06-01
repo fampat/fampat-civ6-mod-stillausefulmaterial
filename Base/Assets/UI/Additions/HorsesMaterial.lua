@@ -120,7 +120,6 @@ function attachHorsesMaterialBoostBotton()
         -- Send notification
         notify(
           localPlayer,
-          96,
           Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
           Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
         );

@@ -14,7 +14,6 @@ local MIN_ERA_INDEX = 4;         -- After reaching the "Renaissance"-era the but
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
 local RESOURCE_ID_IRON = 43;
-local NOTIFY_ICON = 96;
 
 -- Mirrored in ProductionPanel
 local LISTMODE = {PRODUCTION = 1, PURCHASE_GOLD = 2, PURCHASE_FAITH = 3, PROD_QUEUE = 4};
@@ -350,7 +349,6 @@ function OnLocalPlayerTurnBegin()
     -- Send notification
     notify(
       localPlayer,
-      NOTIFY_ICON,
       Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
       Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
     );
@@ -425,7 +423,6 @@ function OnPlayerResourceChanged(playerId, resourceTypeId)
       -- Send notification
       notify(
         localPlayer,
-        NOTIFY_ICON,
         Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
         Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
       );
