@@ -19,7 +19,7 @@ function Initialize()
 
   -- Update the ui after production progress has been made
 	Events.CityProductionUpdated.Add(Refresh);
-	Events.CityProductionCompleted.Add(Refresh);
+	Events.CityProductionCompleted.Add(Close);
 
 	-- Log initialization
 	print("Initialized");

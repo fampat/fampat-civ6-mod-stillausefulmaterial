@@ -6,57 +6,57 @@
 local debugMode = true;
 
 -- Big brother to get stuff done the context cant
-function OnChangeResourceAmount(playerId, resourceIndex, amount)
-	local player = Players[playerId];
+function OnChangeResourceAmount(localPlayerID, params)
+	local player = Players[params.playerId];
 	local playerResources = player:GetResources();
 
 	-- Changing the resource amounts for example
-	playerResources:ChangeResourceAmount(resourceIndex, amount);
+	playerResources:ChangeResourceAmount(params.resourceIndex, params.amount);
 end
 
 -- Also helps out...
-function OnCompleteProduction(playerId, cityId)
-	local pCity = Players[playerId]:GetCities():FindID(cityId);
+function OnCompleteProduction(localPlayerID, params)
+	local pCity = Players[params.ownerId]:GetCities():FindID(params.cityId);
 	local cityBuildQueue = pCity:GetBuildQueue();
 
 	-- ...by finishing productions
 	cityBuildQueue:FinishProgress();
 
-	WriteToLog("Finished production in city: "..cityId);
+	WriteToLog("Finished production in city: "..params.cityId);
 end
 
 -- Another one here...
-function OnAddToProduction(playerId, cityId, amount)
-	local pCity = Players[playerId]:GetCities():FindID(cityId);
+function OnAddToProduction(localPlayerID, params)
+	local pCity = Players[params.ownerId]:GetCities():FindID(params.cityId);
 	local cityBuildQueue = pCity:GetBuildQueue();
 
 	-- ...who add production (boost)
-	cityBuildQueue:AddProgress(amount);
+	cityBuildQueue:AddProgress(params.amount);
 
   -- Transparency!
-	WriteToLog("Added to production: "..amount);
+	WriteToLog("Added to production: "..params.amount);
 end
 
 -- Also helps out...
-function OnAddToResearch(playerId, amount)
-	local player = Players[playerId];
+function OnAddToResearch(localPlayerID, params)
+	local player = Players[params.playerId];
 
 	-- ...by adding science
-	player:GetTechs():ChangeCurrentResearchProgress(amount);
+	player:GetTechs():ChangeCurrentResearchProgress(params.amount);
 
 	-- What happened?
-	WriteToLog("Added "..amount.." science for player: "..playerId);
+	WriteToLog("Added "..params.amount.." science for player: "..params.playerId);
 end
 
 -- Also helps out...
-function OnAddToCivic(playerId, amount)
-	local player = Players[playerId];
+function OnAddToCivic(localPlayerID, params)
+	local player = Players[params.playerId];
 
 	-- ...by adding culture
-	player:GetCulture():ChangeCurrentCulturalProgress(amount);
+	player:GetCulture():ChangeCurrentCulturalProgress(params.amount);
 
 	-- What happened?
-	WriteToLog("Added "..amount.." culture for player: "..playerId);
+	WriteToLog("Added "..params.amount.." culture for player: "..params.playerId);
 end
 
 -- Debug function for logging
@@ -68,15 +68,12 @@ end
 
 -- Main function for initialization
 function Initialize()
-	-- Create a namespace for our mod
-	if (not ExposedMembers.MOD_StillAUsefulMaterial) then ExposedMembers.MOD_StillAUsefulMaterial = {}; end
-
 	-- Communication uplink to our context-sister! HELLO WORLD!
-	ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount = OnChangeResourceAmount;
-	ExposedMembers.MOD_StillAUsefulMaterial.CompleteProduction = OnCompleteProduction;
-	ExposedMembers.MOD_StillAUsefulMaterial.AddToProduction = OnAddToProduction;
-	ExposedMembers.MOD_StillAUsefulMaterial.AddToResearch = OnAddToResearch;
-	ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic = OnAddToCivic;
+	GameEvents.ChangeResourceAmount.Add(OnChangeResourceAmount);
+	GameEvents.CompleteProduction.Add(OnCompleteProduction);
+	GameEvents.AddToProduction.Add(OnAddToProduction);
+	GameEvents.AddToResearch.Add(OnAddToResearch);
+	GameEvents.AddToCivic.Add(OnAddToCivic);
 
 	-- Init message log
 	print("Initialized.");

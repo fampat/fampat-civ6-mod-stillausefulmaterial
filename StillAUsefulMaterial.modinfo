@@ -25,6 +25,10 @@
   	</Criteria>
   </ActionCriteria>
 
+  <Dependencies>
+    <Mod id="4873eb62-8ccc-4574-b784-dda455e74e68" title="Expansion: Gathering Storm" />
+  </Dependencies>
+
   <InGameActions>
     <AddGameplayScripts id="StillAUsefulMaterial_Scripts" Criteria="Expansion2">
   	  <Properties>

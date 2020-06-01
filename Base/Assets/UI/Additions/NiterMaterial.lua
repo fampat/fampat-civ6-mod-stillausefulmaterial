@@ -9,8 +9,8 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of niter that is required before the button shows up (25)
-local MIN_ERA_INDEX = 5;         -- After reaching the "Industrial"-era the button shows up (5)
+local MIN_AMOUNT_FOR_BOOST = 5; -- Amount of niter that is required before the button shows up (25)
+local MIN_ERA_INDEX = 1;         -- After reaching the "Industrial"-era the button shows up (5)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
 local RESOURCE_ID_NITER = 44;
@@ -185,8 +185,14 @@ function boostResearchWithNiter(player)
     -- In case we have more niter that it would cost, complete it!
     -- And save some precious niter
     if requiredScienceNeeded <= scaleWithGameSpeed(resourceStockpile) then
-      -- Finish science, substract resource equl production-cost
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToResearch(playerId, requiredScienceNeeded);
+      -- Game-event callback to add science, substract resource equal to production-cost
+    	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+        OnStart = "AddToResearch",
+        playerId = playerId,
+        amount = requiredScienceNeeded
+      });
+
+      -- Subtract amount
       substractedMaterial = requiredScienceNeeded;
     else
       -- The AI will want to keep its threshold
@@ -199,14 +205,24 @@ function boostResearchWithNiter(player)
         -- Thresholded AI resource stock
         resourceStockpile = thresholdedAIResourceStock;
       end
+      -- Game-event callback to add science, substract resource equal to production-cost
+    	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+        OnStart = "AddToResearch",
+        playerId = playerId,
+        amount = scaleWithGameSpeed(resourceStockpile)
+      });
 
-      -- Add to science, substract entire resources
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToResearch(playerId, scaleWithGameSpeed(resourceStockpile));
+      -- Subtract amount
       substractedMaterial = resourceStockpile;
     end
 
-    -- Here we call out big brother for help!
-    ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount(playerId, GameInfo.Resources["RESOURCE_NITER"].Index, -substractedMaterial);
+    -- Game-event callback to change resource-count on player
+    UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+      OnStart = "ChangeResourceAmount",
+      playerId = playerId,
+      resourceIndex = GameInfo.Resources["RESOURCE_NITER"].Index,
+      amount = -substractedMaterial
+    });
 
     -- Logging logging logging
     WriteToLog("BOOSTed research with niter cost: "..substractedMaterial);

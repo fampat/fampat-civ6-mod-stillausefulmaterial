@@ -9,8 +9,8 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of horses that is required before the button shows up (25)
-local MIN_ERA_INDEX = 6;         -- After reaching the "Modern"-era the button shows up (6)
+local MIN_AMOUNT_FOR_BOOST = 5; -- Amount of horses that is required before the button shows up (25)
+local MIN_ERA_INDEX = 1;         -- After reaching the "Modern"-era the button shows up (6)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
 local RESOURCE_ID_HORSES = 42;
@@ -185,8 +185,14 @@ function boostCultureWithHorses(player)
     -- In case we have more horses that it would cost, complete it!
     -- And save some precious horses
     if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile) then
-      -- Finish culture, substract resource equl production-cost
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic(playerId, requiredCultureNeeded);
+      -- Game-event callback to add civic, substract resource equal to production-cost
+    	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+        OnStart = "AddToCivic",
+        playerId = playerId,
+        amount = requiredCultureNeeded
+      });
+
+      -- Subtract amount
       substractedMaterial = requiredCultureNeeded;
     else
       -- The AI will want to keep its threshold
@@ -200,13 +206,24 @@ function boostCultureWithHorses(player)
         resourceStockpile = thresholdedAIResourceStock;
       end
 
-      -- Add to culture, substract entire resources
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToCivic(playerId, scaleWithGameSpeed(resourceStockpile));
+      -- Game-event callback to add culture, substract resource equal to production-cost
+    	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+        OnStart = "AddToCivic",
+        playerId = playerId,
+        amount = scaleWithGameSpeed(resourceStockpile)
+      });
+
+      -- Subtract amount
       substractedMaterial = resourceStockpile;
     end
 
-    -- Here we call out big brother for help!
-    ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount(playerId, GameInfo.Resources["RESOURCE_HORSES"].Index, -substractedMaterial);
+    -- Game-event callback to change resource-count on player
+    UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+      OnStart = "ChangeResourceAmount",
+      playerId = playerId,
+      resourceIndex = GameInfo.Resources["RESOURCE_HORSES"].Index,
+      amount = -substractedMaterial
+    });
 
     -- Logging logging logging
     WriteToLog("BOOSTed culture with horses cost: "..substractedMaterial);

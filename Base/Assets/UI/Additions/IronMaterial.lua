@@ -9,8 +9,8 @@ include("InstanceManager");
 include("Common_SAUM.lua");
 
 -- Configuration
-local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of iron that is required before the button shows up (25)
-local MIN_ERA_INDEX = 4;         -- After reaching the "Renaissance"-era the button shows up (4)
+local MIN_AMOUNT_FOR_BOOST = 5; -- Amount of iron that is required before the button shows up (25)
+local MIN_ERA_INDEX = 1;         -- After reaching the "Renaissance"-era the button shows up (4)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
 
@@ -206,8 +206,14 @@ function boostProductionInCityWithIron(city)
     -- In case we have more iron that it would cost, complete it!
     -- And save some precious iron
     if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile) then
-      -- Finish production, substract resource equl production-cost
-      ExposedMembers.MOD_StillAUsefulMaterial.CompleteProduction(ownerId, cityId);
+      -- Game-event callback to add production, substract resource equal to production-cost
+    	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+        OnStart = "CompleteProduction",
+        ownerId = ownerId,
+        cityId = cityId
+      });
+
+      -- Subtract amount
       substractedMaterial = requiredProductionNeeded;
     else
       -- The AI will want to keep its threshold
@@ -221,13 +227,25 @@ function boostProductionInCityWithIron(city)
         resourceStockpile = thresholdedAIResourceStock;
       end
 
-      -- Add to production, substract entire resources
-      ExposedMembers.MOD_StillAUsefulMaterial.AddToProduction(ownerId, cityId, scaleWithGameSpeed(resourceStockpile));
+    	-- Game-event callback to add production, substract resource equal to production-cost
+    	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+        OnStart = "AddToProduction",
+        ownerId = ownerId,
+        cityId = cityId,
+        amount = scaleWithGameSpeed(resourceStockpile)
+      });
+
+      -- Subtract amount
       substractedMaterial = resourceStockpile;
     end
 
-    -- Here we call out big brother for help!
-    ExposedMembers.MOD_StillAUsefulMaterial.ChangeResourceAmount(ownerId, GameInfo.Resources["RESOURCE_IRON"].Index, -substractedMaterial);
+    -- Game-event callback to change resource-count on player
+    UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
+      OnStart = "ChangeResourceAmount",
+      playerId = ownerId,
+      resourceIndex = GameInfo.Resources["RESOURCE_IRON"].Index,
+      amount = -substractedMaterial
+    });
 
     -- Logging logging logging
     WriteToLog("BOOSTed production in city: "..city:GetID().." with iron cost: "..substractedMaterial);
@@ -260,8 +278,8 @@ function OnProductionPanelListModeChanged(listMode)
         local localPlayerID = Game.GetLocalPlayer();
         local localPlayer = Players[localPlayerID];
 
-        -- Attach our boost-button
-        attachIronMaterialBoostBotton();
+        -- Attach our boost-button via refresh
+        refreshIronMaterialBoostButton();
       end
     else
       WriteToLog("Hide the boost button (no production-tab selected)!");
