@@ -45,7 +45,7 @@ function createNiterMaterialBoostButton()
     -- State-dependent tooltip
     if boostedThisTurn then
       tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NITER_BOOSTED_TOOLTIP");
-    elseif (not isPlayerResearching(player) or researchCompleted) then
+    elseif (not isPlayerResearching(localPlayerId) or researchCompleted) then
       tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NO_RESEARCH_TOOPTIP");
     else
       -- Default value
@@ -54,7 +54,7 @@ function createNiterMaterialBoostButton()
 
       -- Fetch values for calculating numbers
       local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_NITER");
-      local requiredResearchNeeded = getScienceAmountNeededForCompletion(player);
+      local requiredResearchNeeded = getScienceAmountNeededForCompletion(localPlayerId);
 
       -- Do some very complex math...
       if requiredResearchNeeded <= scaleWithGameSpeed(resourceStockpile) then
@@ -71,7 +71,7 @@ function createNiterMaterialBoostButton()
     end
 
     -- Set the disabled state
-    local isDisabled = (not isPlayerResearching(player) or researchCompleted or boostedThisTurn);
+    local isDisabled = (not isPlayerResearching(localPlayerId) or researchCompleted or boostedThisTurn);
 
   	-- Set button data and action handler
   	niterResearchBoostInstance.NiterResearchBoostButton:SetDisabled(isDisabled);
@@ -114,7 +114,7 @@ function attachNiterMaterialBoostBotton()
   -- Player is real?
   if localPlayer ~= nil then
     -- If is possible to attach, we will see
-    if isBoostWithNiterPossible(localPlayer) or boostedThisTurn then
+    if isBoostWithNiterPossible(localPlayer:GetID()) or boostedThisTurn then
       -- Notify the player
       if notifyIfReady then
         -- Send notification
@@ -191,7 +191,7 @@ function boostResearchWithNiter(player)
 
     -- Fetch the stockpile of the player, and the current production state
     local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_NITER");
-    local requiredScienceNeeded = getScienceAmountNeededForCompletion(player);
+    local requiredScienceNeeded = getScienceAmountNeededForCompletion(playerId);
 
     -- Calc variable
     local substractedMaterial = 0;
@@ -209,16 +209,6 @@ function boostResearchWithNiter(player)
       -- Subtract amount
       substractedMaterial = requiredScienceNeeded;
     else
-      -- The AI will want to keep its threshold
-      if isAI(Players[ownerId]) then
-        local thresholdedAIResourceStock = resourceStockpile - AI_THESHOLD;
-
-        -- AI Boost logging
-        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
-
-        -- Thresholded AI resource stock
-        resourceStockpile = thresholdedAIResourceStock;
-      end
       -- Game-event callback to add science, substract resource equal to production-cost
     	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToResearch",
@@ -247,9 +237,14 @@ function boostResearchWithNiter(player)
 end
 
 -- Helper to check if a player is able to use the boost
-function isBoostWithNiterPossible(player)
+function isBoostWithNiterPossible(playerId)
+  local player = Players[playerId];
+
+  -- AI amendments
+  local minEraForBoost = ((isAI(player) and (MIN_ERA_INDEX + AI_ADD_ERA)) or MIN_ERA_INDEX);
+
   -- He need to be in the right era!
-  if hasRequiredEra(player, MIN_ERA_INDEX) then
+  if hasRequiredEra(player, minEraForBoost) then
     local playerResources = player:GetResources();
 
     -- He will need niter to make it work!
@@ -259,8 +254,11 @@ function isBoostWithNiterPossible(player)
           -- Get the players stock
           local niterStockpileAmount = playerResources:GetResourceAmount(resource.ResourceType);
 
+          -- AI amendments
+          local minAmountForBoost = ((isAI(player) and (MIN_AMOUNT_FOR_BOOST + AI_THESHOLD)) or MIN_AMOUNT_FOR_BOOST);
+
           -- If enough niter is present, allow him to boost!
-          if niterStockpileAmount >= MIN_AMOUNT_FOR_BOOST then
+          if niterStockpileAmount >= minAmountForBoost then
             -- I wanna know what happens there!
             WriteToLog("Boost with niter is possible for player: "..player:GetID()..", with niter: "..niterStockpileAmount);
             return true;
@@ -275,44 +273,6 @@ function isBoostWithNiterPossible(player)
   -- Transparency!
   WriteToLog("Boost with niter is NOT possible for player: "..player:GetID());
   return false;
-end
-
--- AIs will also get a boost if they can afford it
--- TODO: Implement descision-making for more intelligent boosting, eg.
---       if military production exist, boost that instead of a settler.
-function TakeAIActionsForNiterBoost()
-  WriteToLog("AIs science boosting begun!");
-
-  -- Get alive players (only major civs)
-	local players = Game.GetPlayers{Alive = true, Major = true};
-
-  -- Memorize old values
-  local MIN_AMOUNT_FOR_BOOST_BAK = MIN_AMOUNT_FOR_BOOST;
-  local MIN_ERA_INDEX_BAK = MIN_ERA_INDEX;
-
-  -- AI does to all this a bit later, we dont wanna criple it
-  -- These values get checked in the boost-function
-  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST + AI_THESHOLD;
-  MIN_ERA_INDEX = MIN_ERA_INDEX + AI_ADD_ERA;
-
-	-- Player is real?
-	for _, player in ipairs(players) do
-    -- Is the player an AI?
-    if isAI(player) then
-      -- Is boosting possible for this player?
-      if isBoostWithNiterPossible(player) and isPlayerResearching(player) then
-        -- Actual boost
-        boostResearchWithNiter(player);
-
-        -- Logging to make clear what the AI is getting
-        local AIPlayerConfiguration = PlayerConfigurations[player:GetID()];
-        WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted his science!");
-      end
-    end
-	end
-
-  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST_BAK;
-  MIN_ERA_INDEX = MIN_ERA_INDEX_BAK;
 end
 
 -- Get triggered on player resource changes
@@ -371,13 +331,12 @@ function OnLocalPlayerTurnBegin()
   refreshNiterMaterialBoostButton();
 end
 
--- Thinigs that happen when the turn starts
-function OnTurnBegin()
-  -- Its AIs turn to boost baby!
-  TakeAIActionsForNiterBoost();
-end
-
 function Initialize()
+  -- Exposed member callbacks
+  ExposedMembers.SAUM_Niter_IsPlayerResearching = isPlayerResearching;
+  ExposedMembers.SAUM_Niter_IsBoostWithNiterPossible = isBoostWithNiterPossible;
+  ExposedMembers.SAUM_Niter_GetScienceAmountNeededForCompletion = getScienceAmountNeededForCompletion;
+
   -- Trigger a boosting button refresh onload
   Events.LoadGameViewStateDone.Add(OnLocalPlayerTurnBegin);
 
@@ -386,9 +345,6 @@ function Initialize()
 
   --Local players turn end
   Events.LocalPlayerTurnEnd.Add(OnLocalPlayerTurnEnd);
-
-  -- Trigger a boosting reset and the AI handling
-  Events.TurnBegin.Add(OnTurnBegin);
 
   -- Listen to resource changes
   Events.PlayerResourceChanged.Add(OnPlayerResourceChanged);

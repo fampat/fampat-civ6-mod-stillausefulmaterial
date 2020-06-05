@@ -41,7 +41,7 @@ function createIronMaterialBoostButton()
   -- State-dependent tooltip
   if boostedThisTurn then
     tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_IRON_BOOSTED_TOOLTIP");
-  elseif not isCityProducing(selectedCity) then
+  elseif not isCityProducing(selectedCity:GetOwner(), selectedCity:GetID()) then
     tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NO_PRODUCTION_TOOPTIP");
   else
     -- Default value
@@ -50,7 +50,7 @@ function createIronMaterialBoostButton()
 
     -- Fetch values for calculating numbers
     local resourceStockpile = getStrategicResourceStockpileOfCityOwner(selectedCity, "RESOURCE_IRON");
-    local requiredProductionNeeded = getProductionAmountNeededForCompletion(selectedCity);
+    local requiredProductionNeeded = getProductionAmountNeededForCompletion(selectedCity:GetOwner(), selectedCity:GetID());
 
     -- Do some very complex math...
     if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile) then
@@ -67,7 +67,7 @@ function createIronMaterialBoostButton()
   end
 
   -- Set the disabled state
-  local isDisabled = (not isCityProducing(selectedCity) or boostedThisTurn);
+  local isDisabled = (not isCityProducing(selectedCity:GetOwner(), selectedCity:GetID()) or boostedThisTurn);
 
 	-- Set button data and action handler
 	ironProductionBoostInstance.IronProductionBoostButton:SetDisabled(isDisabled);
@@ -81,7 +81,7 @@ function createIronMaterialBoostButton()
 			UI.PlaySound("Play_UI_Click");
 
       -- Execute the boost
-      boostProductionInCityWithIron(selectedCity);
+      boostProductionInCityWithIron(selectedCity:GetOwner(), selectedCity:GetID());
 
       -- Memorize state
       boostedThisTurn = true;
@@ -105,7 +105,7 @@ function attachIronMaterialBoostBotton()
     local localPlayer = Players[Game.GetLocalPlayer()];
 
     -- If is possible to attach, we will see
-    if isBoostWithIronPossible(localPlayer) or boostedThisTurn then
+    if isBoostWithIronPossible(localPlayer:GetID()) or boostedThisTurn then
       -- Create the button
       createIronMaterialBoostButton();
 
@@ -157,9 +157,15 @@ function detachIronMaterialBoostButton()
 end
 
 -- Helper to check if a player is able to use the boost
-function isBoostWithIronPossible(player)
+function isBoostWithIronPossible(playerId)
+  -- Fetch the player
+  local player = Players[playerId];
+
+  -- AI amendments
+  local minEraForBoost = ((isAI(player) and (MIN_ERA_INDEX + AI_ADD_ERA)) or MIN_ERA_INDEX);
+
   -- He need to be in the right era!
-  if hasRequiredEra(player, MIN_ERA_INDEX) then
+  if hasRequiredEra(player, minEraForBoost) then
     local playerResources = player:GetResources();
 
     -- He wil need iron to make it work!
@@ -169,8 +175,11 @@ function isBoostWithIronPossible(player)
           -- Get the players stock
           local ironStockpileAmount = playerResources:GetResourceAmount(resource.ResourceType);
 
+          -- AI amendments
+          local minAmountForBoost = ((isAI(player) and (MIN_AMOUNT_FOR_BOOST + AI_THESHOLD)) or MIN_AMOUNT_FOR_BOOST);
+
           -- If enough iron is present, allow him to boost!
-          if ironStockpileAmount >= MIN_AMOUNT_FOR_BOOST then
+          if ironStockpileAmount >= minAmountForBoost then
             -- I wanna know what happens there!
             WriteToLog("Boost with iron is possible for player: "..player:GetID()..", with iron: "..ironStockpileAmount);
             return true;
@@ -194,7 +203,10 @@ function refreshIronMaterialBoostButton()
 end
 
 -- The actual production boost action takes place here
-function boostProductionInCityWithIron(city)
+function boostProductionInCityWithIron(ownerId, cityId)
+  -- Fetch the city
+  local city = CityManager.GetCity(ownerId, cityId);
+
   -- But only with real cities
   if city ~= nil then
     -- Variables stuff
@@ -203,7 +215,7 @@ function boostProductionInCityWithIron(city)
 
     -- Fetch the stockpile of the player, and the current production state
     local resourceStockpile = getStrategicResourceStockpileOfCityOwner(city, "RESOURCE_IRON");
-    local requiredProductionNeeded = getProductionAmountNeededForCompletion(city);
+    local requiredProductionNeeded = getProductionAmountNeededForCompletion(city:GetOwner(), city:GetID());
 
     -- Calc variable
     local substractedMaterial = 0;
@@ -221,17 +233,6 @@ function boostProductionInCityWithIron(city)
       -- Subtract amount
       substractedMaterial = requiredProductionNeeded;
     else
-      -- The AI will want to keep its threshold
-      if isAI(Players[ownerId]) then
-        local thresholdedAIResourceStock = resourceStockpile - AI_THESHOLD;
-
-        -- AI Boost logging
-        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
-
-        -- Thresholded AI resource stock
-        resourceStockpile = thresholdedAIResourceStock;
-      end
-
     	-- Game-event callback to add production, substract resource equal to production-cost
     	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToProduction",
@@ -345,7 +346,7 @@ function OnLocalPlayerTurnBegin()
   detachIronMaterialBoostButton();
 
   -- Notify the player
-  if notifyIfReady and isBoostWithIronPossible(localPlayer) then
+  if notifyIfReady and isBoostWithIronPossible(localPlayer:GetID()) then
     -- Send notification
     notify(
       localPlayer,
@@ -361,68 +362,15 @@ function OnLocalPlayerTurnBegin()
   WriteToLog("Turn begins, boosted value has been reset!");
 end
 
--- Thinigs that happen when the turn starts
-function OnTurnBegin()
-  -- Its AIs turn to boost baby!
-  TakeAIActionsForIronBoost();
-end
-
--- AIs will also get a boost if they can afford it
--- TODO: Implement descision-making for more intelligent boosting, eg.
---       if military production exist, boost that instead of a settler.
-function TakeAIActionsForIronBoost()
-  WriteToLog("AIs production boosting begun!");
-
-  -- Get alive players (only major civs)
-	local players = Game.GetPlayers{Alive = true, Major = true};
-
-  -- Memorize old values
-  local MIN_AMOUNT_FOR_BOOST_BAK = MIN_AMOUNT_FOR_BOOST;
-  local MIN_ERA_INDEX_BAK = MIN_ERA_INDEX;
-
-  -- AI does to all this a bit different
-  -- These values get checked in the boost-function
-  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST + AI_THESHOLD;
-  MIN_ERA_INDEX = MIN_ERA_INDEX + AI_ADD_ERA;
-
-	-- Player is real?
-	for _, player in ipairs(players) do
-    -- Is the player an AI?
-    if isAI(player) then
-      -- Is boostint possible for this player?
-      if isBoostWithIronPossible(player) then
-        local pCities = player:GetCities();
-
-        -- Loop the player cities
-        for _, pCity in pCities:Members() do
-          if isCityProducing(pCity) then
-            -- Boost the AI´s city
-            boostProductionInCityWithIron(pCity);
-
-            -- Logging to make clear what the AI is getting
-            local AIPlayerConfiguration = PlayerConfigurations[player:GetID()];
-            WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted in city: "..pCity:GetName());
-            break;
-          end
-        end
-      end
-    end
-	end
-
-  -- Restore default values
-  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST_BAK;
-  MIN_ERA_INDEX = MIN_ERA_INDEX_BAK;
-end
-
 -- Get triggered on player resource changes
 function OnPlayerResourceChanged(playerId, resourceTypeId)
   -- Local player niter amount changed...
   if playerId == Game.GetLocalPlayer() and resourceTypeId == RESOURCE_ID_IRON then  -- Iron
     -- Notify if needed
-    if notifyIfReady and isBoostWithIronPossible(Players[localPlayer]) then
+    if not boostedThisTurn and notifyIfReady and isBoostWithIronPossible(playerId) then
       -- Send notification
       notify(
-        localPlayer,
+        playerId,
         Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
         Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
       );
@@ -435,6 +383,11 @@ end
 
 -- Initialization stuffs
 function Initialize()
+  -- Exposed member callbacks
+  ExposedMembers.SAUM_Iron_IsCityProducing = isCityProducing;
+  ExposedMembers.SAUM_Iron_IsBoostWithIronPossible = isBoostWithIronPossible;
+  ExposedMembers.SAUM_Iron_GetProductionAmountNeededForCompletion = getProductionAmountNeededForCompletion;
+
   -- Listen to when production tabs get changed
   LuaEvents.ProductionPanel_ListModeChanged.Add(OnProductionPanelListModeChanged);
 
@@ -447,9 +400,6 @@ function Initialize()
 
   -- Listen to resource changes
   Events.PlayerResourceChanged.Add(OnPlayerResourceChanged);
-
-  -- Trigger a boosting reset and the AI handling
-  Events.TurnBegin.Add(OnTurnBegin);
 
   -- Hmm... what might this be good for?
   print("Initialize");

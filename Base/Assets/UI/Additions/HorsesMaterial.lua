@@ -45,7 +45,7 @@ function createHorsesMaterialBoostButton()
     -- State-dependent tooltip
     if boostedThisTurn then
       tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_HORSES_BOOSTED_TOOLTIP");
-    elseif (not isPlayerDevelopingCulture(player) or civicCompleted) then
+    elseif (not isPlayerDevelopingCulture(localPlayerId) or civicCompleted) then
       tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NO_RESEARCH_TOOPTIP");
     else
       -- Default value
@@ -54,7 +54,7 @@ function createHorsesMaterialBoostButton()
 
       -- Fetch values for calculating numbers
       local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_HORSES");
-      local requiredCultureNeeded = getCultureAmountNeededForCompletion(player);
+      local requiredCultureNeeded = getCultureAmountNeededForCompletion(localPlayerId);
 
       -- Do some very complex math...
       if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile) then
@@ -71,7 +71,7 @@ function createHorsesMaterialBoostButton()
     end
 
     -- Set the disabled state
-    local isDisabled = (not isPlayerDevelopingCulture(player) or civicCompleted or boostedThisTurn);
+    local isDisabled = (not isPlayerDevelopingCulture(localPlayerId) or civicCompleted or boostedThisTurn);
 
   	-- Set button data and action handler
   	horsesCultureBoostInstance.HorsesCultureBoostButton:SetDisabled(isDisabled);
@@ -114,7 +114,7 @@ function attachHorsesMaterialBoostBotton()
   -- Player is real?
   if localPlayer ~= nil then
     -- If is possible to attach, we will see
-    if isBoostWithHorsesPossible(localPlayer) or boostedThisTurn then
+    if isBoostWithHorsesPossible(localPlayer:GetID()) or boostedThisTurn then
       -- Notify the player
       if notifyIfReady then
         -- Send notification
@@ -192,7 +192,7 @@ function boostCultureWithHorses(player)
 
     -- Fetch the stockpile of the player, and the current production state
     local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_HORSES");
-    local requiredCultureNeeded = getCultureAmountNeededForCompletion(player);
+    local requiredCultureNeeded = getCultureAmountNeededForCompletion(playerId);
 
     -- Calc variable
     local substractedMaterial = 0;
@@ -210,17 +210,6 @@ function boostCultureWithHorses(player)
       -- Subtract amount
       substractedMaterial = requiredCultureNeeded;
     else
-      -- The AI will want to keep its threshold
-      if isAI(Players[ownerId]) then
-        local thresholdedAIResourceStock = resourceStockpile - AI_THESHOLD;
-
-        -- AI Boost logging
-        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
-
-        -- Thresholded AI resource stock
-        resourceStockpile = thresholdedAIResourceStock;
-      end
-
       -- Game-event callback to add culture, substract resource equal to production-cost
     	UI.RequestPlayerOperation(localPlayer, PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToCivic",
@@ -249,8 +238,13 @@ function boostCultureWithHorses(player)
 end
 
 -- Helper to check if a player is able to use the boost
-function isBoostWithHorsesPossible(player)
-  -- He need to be in the right era!
+function isBoostWithHorsesPossible(playerId)
+  local player = Players[playerId];
+
+  -- AI amendments
+  local minEraForBoost = ((isAI(player) and (MIN_ERA_INDEX + AI_ADD_ERA)) or MIN_ERA_INDEX);
+
+    -- He need to be in the right era!
   if hasRequiredEra(player, MIN_ERA_INDEX) then
     local playerResources = player:GetResources();
 
@@ -261,8 +255,11 @@ function isBoostWithHorsesPossible(player)
           -- Get the players stock
           local horsesStockpileAmount = playerResources:GetResourceAmount(resource.ResourceType);
 
+          -- AI amendments
+          local minAmountForBoost = ((isAI(player) and (MIN_AMOUNT_FOR_BOOST + AI_THESHOLD)) or MIN_AMOUNT_FOR_BOOST);
+
           -- If enough horses is present, allow him to boost!
-          if horsesStockpileAmount >= MIN_AMOUNT_FOR_BOOST then
+          if horsesStockpileAmount >= minAmountForBoost then
             -- I wanna know what happens there!
             WriteToLog("Boost with horses is possible for player: "..player:GetID()..", with horses: "..horsesStockpileAmount);
             return true;
@@ -277,45 +274,6 @@ function isBoostWithHorsesPossible(player)
   -- Transparency!
   WriteToLog("Boost with horses is NOT possible for player: "..player:GetID());
   return false;
-end
-
--- AIs will also get a boost if they can afford it
--- TODO: Implement descision-making for more intelligent boosting, eg.
---       if military production exist, boost that instead of a settler.
-function TakeAIActionsForHorsesBoost()
-  WriteToLog("AIs culture boosting begun!");
-
-  -- Get alive players (only major civs)
-	local players = Game.GetPlayers{Alive = true, Major = true};
-
-  -- Memorize old values
-  local MIN_AMOUNT_FOR_BOOST_BAK = MIN_AMOUNT_FOR_BOOST;
-  local MIN_ERA_INDEX_BAK = MIN_ERA_INDEX;
-
-  -- AI does to all this a bit later, we dont wanna criple it
-  -- These values get checked in the boost-function
-  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST + AI_THESHOLD;
-  MIN_ERA_INDEX = MIN_ERA_INDEX + AI_ADD_ERA;
-
-	-- Player is real?
-	for _, player in ipairs(players) do
-    -- Is the player an AI?
-    if isAI(player) then
-      -- Is boosting possible for this player?
-      if isBoostWithHorsesPossible(player) and isPlayerDevelopingCulture(player) then
-        -- Actual boost
-        boostCultureWithHorses(player);
-
-        -- Logging to make clear what the AI is getting
-        local AIPlayerConfiguration = PlayerConfigurations[player:GetID()];
-        WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted his culture!");
-      end
-    end
-	end
-
-  -- Restore default values
-  MIN_AMOUNT_FOR_BOOST = MIN_AMOUNT_FOR_BOOST_BAK;
-  MIN_ERA_INDEX = MIN_ERA_INDEX_BAK;
 end
 
 -- Get triggered on player resource changes
@@ -375,14 +333,13 @@ function OnLocalPlayerTurnBegin()
   refreshHorsesMaterialBoostButton();
 end
 
--- Thinigs that happen when the turn starts
-function OnTurnBegin()
-  -- Its AIs turn to boost baby!
-  TakeAIActionsForHorsesBoost();
-end
-
 -- Inilizer!
 function Initialize()
+  -- Exposed member callbacks
+  ExposedMembers.SAUM_Niter_IsPlayerDevelopingCulture = isPlayerDevelopingCulture;
+  ExposedMembers.SAUM_Niter_IsBoostWithHorsesPossible = isBoostWithHorsesPossible;
+  ExposedMembers.SAUM_Niter_GetCultureAmountNeededForCompletion = getCultureAmountNeededForCompletion;
+
   -- Trigger a boosting button refresh onload
   Events.LoadGameViewStateDone.Add(OnLocalPlayerTurnBegin);
 
@@ -391,9 +348,6 @@ function Initialize()
 
   --Local players turn end
   Events.LocalPlayerTurnEnd.Add(OnLocalPlayerTurnEnd);
-
-  -- Trigger a boosting reset and the AI handling
-  Events.TurnBegin.Add(OnTurnBegin);
 
   -- Listen to resource changes
   Events.PlayerResourceChanged.Add(OnPlayerResourceChanged);

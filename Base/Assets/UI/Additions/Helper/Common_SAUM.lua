@@ -18,12 +18,20 @@ function notify(localPlayer, headline, content)
 end
 
 -- Helper to check if a city is currently producing something
-function isCityProducing(city)
-  return (getProductionAmountNeededForCompletion(city) ~= 0);
+function isCityProducing(ownerId, cityId)
+  -- Fetch the city
+  local city = CityManager.GetCity(ownerId, cityId);
+
+  -- Check needed amount
+  return (getProductionAmountNeededForCompletion(ownerId, cityId) ~= 0);
 end
 
 -- Helper to determine how much production is needed for completion
-function getProductionAmountNeededForCompletion(pCity)
+function getProductionAmountNeededForCompletion(ownerId, cityId)
+  -- Fetch City
+  local pCity = CityManager.GetCity(ownerId, cityId)
+
+  -- Fetch queue
   local pBuildQueue = pCity:GetBuildQueue();
 	local currentProductionHash = 0;
 
@@ -48,12 +56,14 @@ function getProductionAmountNeededForCompletion(pCity)
 end
 
 -- Helper to check if a player has a research selected and it is boostable
-function isPlayerResearching(player)
-  return (getScienceAmountNeededForCompletion(player) > 0);
+function isPlayerResearching(playerId)
+  return (getScienceAmountNeededForCompletion(playerId) > 0);
 end
 
 -- Helper to determine how much science is needed for completion
-function getScienceAmountNeededForCompletion(player)
+function getScienceAmountNeededForCompletion(playerId)
+  local player = Players[playerId];
+
   -- Fetch the players techs
   local playerTechs = player:GetTechs();
 
@@ -86,12 +96,14 @@ function getScienceAmountNeededForCompletion(player)
 end
 
 -- Helper to check if a player has a civic selected and it is boostable
-function isPlayerDevelopingCulture(player)
-  return (getCultureAmountNeededForCompletion(player) > 0);
+function isPlayerDevelopingCulture(playerId)
+  return (getCultureAmountNeededForCompletion(playerId) > 0);
 end
 
 -- Helper to determine how much culture is needed for completion
-function getCultureAmountNeededForCompletion(player)
+function getCultureAmountNeededForCompletion(playerId)
+  local player = Players[playerId];
+
   -- Fetch the players civics
   local playerCulture = player:GetCulture();
 
