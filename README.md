@@ -1,4 +1,4 @@
-[h1]Still A Useful Material - BETA[/h1]
+[h1]Still A Useful Material[/h1]
 
 This mod enables a player to make use of early strategic resources which often are no longer needed mid-late game.
 
@@ -13,7 +13,7 @@ The AI needs that threshold to make sure it always has some materials laying aro
 
 [b]Boostable Resources[/b]
 [u]Iron[/u]
-- Boost ratio: 1 Iron to 1 Production in one city on default game-speed (scales with game-speed)
+- Boost ratio: 1 Iron to 1.15 Production in one city on default game-speed (scales with game-speed and eras)
 - Minimal amount for boosting is 25, [b]button wont show up else[/b]
 - Minimal era required: Renaissance, [b]button wont show up else[/b]
 - Usable once per turn (no finishing and boosting on the same turn)
@@ -21,7 +21,7 @@ The AI needs that threshold to make sure it always has some materials laying aro
 - Incase a boost would finish the production, it will consume iron equal to the needed production
 
 [u]Niter[/u]
-- Boost ratio: 1 Niter to 1 Science on default game-speed (scales with game-speed)
+- Boost ratio: 1 Niter to 1.85 Science on default game-speed (scales with game-speed and eras)
 - Minimal amount for boosting is 25, [b]button wont show up else[/b]
 - Minimal era required: Industrial, [b]button wont show up else[/b]
 - Usable once per turn (no boosting, trading and boosting again)
@@ -29,7 +29,7 @@ The AI needs that threshold to make sure it always has some materials laying aro
 - Incase a boost would finish the research, it will consume niter equal to the needed science
 
 [u]Horses[/u]
-- Boost ratio: 1 Horse to 1 Culture on default game-speed (scales with game-speed)
+- Boost ratio: 1 Horse to 2.15 Culture on default game-speed (scales with game-speed and eras)
 - Minimal amount for boosting is 25, [b]button wont show up else[/b]
 - Minimal era required: Modern, [b]button wont show up else[/b]
 - Usable once per turn (no boosting, trading and boosting again)

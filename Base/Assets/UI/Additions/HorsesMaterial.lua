@@ -13,6 +13,8 @@ local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of horses that is required before the
 local MIN_ERA_INDEX = 6;         -- After reaching the "Modern"-era the button shows up (6)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
+local BOOST_RATIO_INCREMENT_PER_ERA = 0.85;  -- Additional multipler based on 1:1
+local BOOST_RATIO_BASE_MULTIPLIER = 2.15;      -- Base multipler for the hardcoded 1:1 ratio
 local RESOURCE_ID_HORSES = 42;
 
 -- Variables for handling
@@ -57,17 +59,17 @@ function createHorsesMaterialBoostButton()
       local requiredCultureNeeded = getCultureAmountNeededForCompletion(localPlayerId);
 
       -- Do some very complex math...
-      if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile) then
-        horsesAmountToConsume = requiredCultureNeeded;
+      if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()) then
+        horsesAmountToConsume = (requiredCultureNeeded / scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())) * resourceStockpile;
         cultureToBeCompleted = requiredCultureNeeded;
       else
         horsesAmountToConsume = resourceStockpile;
-        cultureToBeCompleted = resourceStockpile;
+        cultureToBeCompleted = scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier());
       end
       -- ...done
 
       -- Set our tooltip
-      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_HORSES_UNBOOSTED_TOOLTIP", math.ceil(horsesAmountToConsume), scaleWithGameSpeed(cultureToBeCompleted));
+      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_HORSES_UNBOOSTED_TOOLTIP", math.ceil(horsesAmountToConsume), roundNumber(cultureToBeCompleted, 0));
     end
 
     -- Set the disabled state
@@ -119,7 +121,7 @@ function attachHorsesMaterialBoostBotton()
       if notifyIfReady then
         -- Send notification
         notify(
-          localPlayer,
+          localPlayer:GetID(),
           Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
           Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
         );
@@ -199,7 +201,7 @@ function boostCultureWithHorses(player)
 
     -- In case we have more horses that it would cost, complete it!
     -- And save some precious horses
-    if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile) then
+    if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()) then
       -- Game-event callback to add civic, substract resource equal to production-cost
     	UI.RequestPlayerOperation(localPlayer, PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToCivic",
@@ -208,17 +210,23 @@ function boostCultureWithHorses(player)
       });
 
       -- Subtract amount
-      substractedMaterial = requiredCultureNeeded;
+      substractedMaterial = math.ceil((requiredCultureNeeded / scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())) * resourceStockpile);
+
+      -- Logging logging logging
+      WriteToLog("FINISHed culture with: "..substractedMaterial.." / "..requiredCultureNeeded);
     else
       -- Game-event callback to add culture, substract resource equal to production-cost
     	UI.RequestPlayerOperation(localPlayer, PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToCivic",
         playerId = playerId,
-        amount = scaleWithGameSpeed(resourceStockpile)
+        amount = scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())
       });
 
       -- Subtract amount
       substractedMaterial = resourceStockpile;
+
+      -- Logging logging logging
+      WriteToLog("BOOSTed culture with: "..substractedMaterial.." / "..scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()));
     end
 
     -- Game-event callback to change resource-count on player
@@ -228,9 +236,6 @@ function boostCultureWithHorses(player)
       resourceIndex = GameInfo.Resources["RESOURCE_HORSES"].Index,
       amount = -substractedMaterial
     });
-
-    -- Logging logging logging
-    WriteToLog("BOOSTed culture with horses cost: "..substractedMaterial);
   else
     -- Also here we do our logging :)
     WriteToLog("BOOST not possible, no player selected!");
@@ -274,6 +279,10 @@ function isBoostWithHorsesPossible(playerId)
   -- Transparency!
   WriteToLog("Boost with horses is NOT possible for player: "..player:GetID());
   return false;
+end
+
+function getEraIncrementModifier()
+  return BOOST_RATIO_BASE_MULTIPLIER + getBoostIncrementedValue(MIN_ERA_INDEX, BOOST_RATIO_INCREMENT_PER_ERA);
 end
 
 -- Get triggered on player resource changes

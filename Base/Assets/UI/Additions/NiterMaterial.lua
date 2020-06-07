@@ -13,6 +13,8 @@ local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of niter that is required before the 
 local MIN_ERA_INDEX = 5;         -- After reaching the "Industrial"-era the button shows up (5)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
+local BOOST_RATIO_INCREMENT_PER_ERA = 0.6;  -- Additional multipler based on 1:1
+local BOOST_RATIO_BASE_MULTIPLIER = 1.85;      -- Base multipler for the hardcoded 1:1 ratio
 local RESOURCE_ID_NITER = 44;
 
 -- Variables for handling
@@ -57,17 +59,17 @@ function createNiterMaterialBoostButton()
       local requiredResearchNeeded = getScienceAmountNeededForCompletion(localPlayerId);
 
       -- Do some very complex math...
-      if requiredResearchNeeded <= scaleWithGameSpeed(resourceStockpile) then
-        niterAmountToConsume = requiredResearchNeeded;
+      if requiredResearchNeeded <= scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()) then
+        niterAmountToConsume = (requiredResearchNeeded / scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())) * resourceStockpile;
         researchToBeCompleted = requiredResearchNeeded;
       else
         niterAmountToConsume = resourceStockpile;
-        researchToBeCompleted = resourceStockpile;
+        researchToBeCompleted = scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier());
       end
       -- ...done
 
       -- Set our tooltip
-      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NITER_UNBOOSTED_TOOLTIP", math.ceil(niterAmountToConsume), scaleWithGameSpeed(researchToBeCompleted));
+      tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_NITER_UNBOOSTED_TOOLTIP", math.ceil(niterAmountToConsume), roundNumber(researchToBeCompleted, 0));
     end
 
     -- Set the disabled state
@@ -119,7 +121,7 @@ function attachNiterMaterialBoostBotton()
       if notifyIfReady then
         -- Send notification
         notify(
-          localPlayer,
+          localPlayer:GetID(),
           Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
           Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
         );
@@ -198,7 +200,7 @@ function boostResearchWithNiter(player)
 
     -- In case we have more niter that it would cost, complete it!
     -- And save some precious niter
-    if requiredScienceNeeded <= scaleWithGameSpeed(resourceStockpile) then
+    if requiredScienceNeeded <= scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()) then
       -- Game-event callback to add science, substract resource equal to production-cost
     	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToResearch",
@@ -207,17 +209,23 @@ function boostResearchWithNiter(player)
       });
 
       -- Subtract amount
-      substractedMaterial = requiredScienceNeeded;
+      substractedMaterial = math.ceil((requiredScienceNeeded / scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())) * resourceStockpile);
+
+      -- Logging logging logging
+      WriteToLog("FINISHed research with: "..substractedMaterial.." / "..requiredScienceNeeded);
     else
       -- Game-event callback to add science, substract resource equal to production-cost
     	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToResearch",
         playerId = playerId,
-        amount = scaleWithGameSpeed(resourceStockpile)
+        amount = scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())
       });
 
       -- Subtract amount
       substractedMaterial = resourceStockpile;
+
+      -- Logging logging logging
+      WriteToLog("BOOSTed research with: "..substractedMaterial.." / "..scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()));
     end
 
     -- Game-event callback to change resource-count on player
@@ -273,6 +281,10 @@ function isBoostWithNiterPossible(playerId)
   -- Transparency!
   WriteToLog("Boost with niter is NOT possible for player: "..player:GetID());
   return false;
+end
+
+function getEraIncrementModifier()
+  return BOOST_RATIO_BASE_MULTIPLIER + getBoostIncrementedValue(MIN_ERA_INDEX, BOOST_RATIO_INCREMENT_PER_ERA);
 end
 
 -- Get triggered on player resource changes

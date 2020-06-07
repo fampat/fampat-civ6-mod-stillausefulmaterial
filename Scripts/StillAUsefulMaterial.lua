@@ -13,6 +13,21 @@ local IRON_AI_THESHOLD = 10; -- This amount the AI never uses for boosting
 local NITER_AI_THESHOLD = 10; -- This amount the AI never uses for boosting
 local HORSES_AI_THESHOLD = 10; -- This amount the AI never uses for boosting
 
+-- Sets the era at which boosting starts
+local IRON_AI_MIN_ERA_INDEX = 4;
+local NITER_AI_MIN_ERA_INDEX = 5;
+local HORSES_AI_MIN_ERA_INDEX = 6;
+
+-- Additional multipler for the modified base-ratio per era
+local IRON_AI_BOOST_RATIO_INCREMENT_PER_ERA = 0.35;
+local NITER_AI_BOOST_RATIO_INCREMENT_PER_ERA = 0.6;
+local HORSES_AI_BOOST_RATIO_INCREMENT_PER_ERA = 0.85;
+
+-- Base multipler for the hardcoded 1:1 ratio
+local IRON_AI_BOOST_RATIO_BASE_MULTIPLIER = 1.15;
+local NITER_AI_BOOST_RATIO_BASE_MULTIPLIER = 1.85;
+local HORSES_AI_BOOST_RATIO_BASE_MULTIPLIER = 2.15;
+
 -- Big brother to get stuff done the context cant
 function OnChangeResourceAmount(localPlayerID, params)
 	local player = Players[params.playerId];
@@ -70,243 +85,246 @@ end
 -- AIs will also get a boost if they can afford it
 -- TODO: Implement descision-making for more intelligent boosting, eg.
 --       if military production exist, boost that instead of a settler.
-function TakeAIActionsForIronBoost()
-  WriteToLog("AIs production boosting begun!");
+function TakeAIActionsForIronBoost(playerAI)
+  -- Is boostint possible for this playerAI?
+  if ExposedMembers.SAUM_Iron_IsBoostWithIronPossible(playerAI:GetID()) then
+    local pCities = playerAI:GetCities();
 
-  -- Get alive players (only major civs)
-	local players = Game.GetPlayers{Alive = true, Major = true};
+    -- Loop the playerAI cities
+    for _, pCity in pCities:Members() do
+			-- Real city?
+			if pCity ~= nil then
+				-- Get owner-stuff
+				local cityOwnerId = pCity:GetOwner();
+				local cityId = pCity:GetID();
 
-	-- Player is real?
-	for _, player in ipairs(players) do
-    -- Is the player an AI?
-    if isAI(player) then
-      -- Is boostint possible for this player?
-      if ExposedMembers.SAUM_Iron_IsBoostWithIronPossible(player:GetID()) then
-        local pCities = player:GetCities();
+				-- City validity checks
+	      if not ExposedMembers.SAUM_Iron_IsCityOccupied(cityOwnerId, cityId)	and ExposedMembers.SAUM_Iron_IsCityProducing(cityOwnerId, cityId) then
+					-- Logging ya know
+				  WriteToLog("AIs production boosting begun for player: "..cityOwnerId.." in city: "..cityId);
 
-        -- Loop the player cities
-        for _, pCity in pCities:Members() do
-          if ExposedMembers.SAUM_Iron_IsCityProducing(pCity:GetOwner(), pCity:GetID()) then
-					  -- Boost the AI´s city, but only with real cities
-					  if pCity ~= nil then
-					    -- Variables stuff
-					    local cityId = pCity:GetID();
-					    local ownerId = pCity:GetOwner();
+			    -- Fetch the stockpile of the player, and the current production state
+			    local resourceStockpile = getStrategicResourceStockpileOfCityOwner(pCity, "RESOURCE_IRON");
+			    local requiredProductionNeeded = ExposedMembers.SAUM_Iron_GetProductionAmountNeededForCompletion(cityOwnerId, cityId);
 
-					    -- Fetch the stockpile of the player, and the current production state
-					    local resourceStockpile = getStrategicResourceStockpileOfCityOwner(pCity, "RESOURCE_IRON");
-					    local requiredProductionNeeded = ExposedMembers.SAUM_Iron_GetProductionAmountNeededForCompletion(ownerId, cityId);
+					-- Do stuff only if possible
+					if (resourceStockpile > 0 and requiredProductionNeeded > 0) then
+				    -- Calc variable
+				    local substractedMaterial = 0;
 
-					    -- Calc variable
-					    local substractedMaterial = 0;
+						-- Calc the era boost multipler
+						local eraBoostMultiplier = IRON_AI_BOOST_RATIO_BASE_MULTIPLIER + getBoostIncrementedValue(IRON_AI_MIN_ERA_INDEX, IRON_AI_BOOST_RATIO_INCREMENT_PER_ERA);
 
-					    -- In case we have more iron that it would cost, complete it!
-					    -- And save some precious iron
-					    if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile) then
-								-- Complete the AIs production
-								OnCompleteProduction(Game.GetLocalPlayer(), {
-									ownerId = ownerId,
-									cityId = cityId
-								});
+				    -- In case we have more iron that it would cost, complete it!
+				    -- And save some precious iron
+				    if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile * eraBoostMultiplier) then
+							-- Complete the AIs production
+							OnCompleteProduction(nil, {
+								ownerId = cityOwnerId,
+								cityId = cityId
+							});
 
-					      -- Subtract amount
-					      substractedMaterial = requiredProductionNeeded;
-					    else
-				        local thresholdedAIResourceStock = resourceStockpile - IRON_AI_THESHOLD;
+				      -- Subtract amount
+				      substractedMaterial = requiredProductionNeeded;
+				    else
+			        local thresholdedAIResourceStock = resourceStockpile - IRON_AI_THESHOLD;
 
-				        -- AI Boost logging
-				        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
+			        -- AI Boost logging
+			        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
 
-				        -- Thresholded AI resource stock
-				        resourceStockpile = thresholdedAIResourceStock;
+			        -- Thresholded AI resource stock
+			        resourceStockpile = thresholdedAIResourceStock;
 
-								-- Add to production
-								OnAddToProduction(Game.GetLocalPlayer(), {
-					        ownerId = ownerId,
-					        cityId = cityId,
-					        amount = scaleWithGameSpeed(resourceStockpile)
-					      });
+							-- Add to production
+							OnAddToProduction(nil, {
+				        ownerId = cityOwnerId,
+				        cityId = cityId,
+				        amount = scaleWithGameSpeed(resourceStockpile * eraBoostMultiplier)
+				      });
 
-					      -- Subtract amount
-					      substractedMaterial = resourceStockpile;
-					    end
+				      -- Subtract amount
+				      substractedMaterial = resourceStockpile;
+				    end
 
-							-- Change resource amount
-							OnChangeResourceAmount(Game.GetLocalPlayer(), {
-					      playerId = ownerId,
-					      resourceIndex = GameInfo.Resources["RESOURCE_IRON"].Index,
-					      amount = -substractedMaterial
-					    });
+						-- Change resource amount
+						OnChangeResourceAmount(nil, {
+				      playerId = cityOwnerId,
+				      resourceIndex = GameInfo.Resources["RESOURCE_IRON"].Index,
+				      amount = -substractedMaterial
+				    });
 
-							-- Logging to make clear what the AI is getting
-	            local AIPlayerConfiguration = PlayerConfigurations[player:GetID()];
-	            WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted in city: "..pCity:GetName());
+						-- Logging to make clear what the AI is getting
+	          local AIPlayerConfiguration = PlayerConfigurations[cityOwnerId];
+	          WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted in city: "..pCity:GetName());
 
-							-- No more boosting this turn
-	            break;
-					  end
-          end
-        end
-      end
+						-- No more boosting this turn
+	          break;
+				  end
+	      end
+	    end
     end
+  end
+end
+
+-- AIs will also get a boost if they can afford it
+function TakeAIActionsForNiterBoost(playerAI)
+	-- But only with real player
+	if playerAI ~= nil then
+    local playerId = playerAI:GetID();
+
+		-- Logging ya know
+	  WriteToLog("AIs research boosting begun for player: "..playerId);
+
+	  -- Is boosting possible for this player?
+	  if ExposedMembers.SAUM_Niter_IsPlayerResearching(playerId) and ExposedMembers.SAUM_Niter_IsBoostWithNiterPossible(playerId) then
+	    -- Fetch the stockpile of the player, and the current production state
+	    local resourceStockpile = getStrategicResourceStockpileOfPlayer(playerAI, "RESOURCE_NITER");
+	    local requiredScienceNeeded = ExposedMembers.SAUM_Niter_GetScienceAmountNeededForCompletion(playerId);
+
+			-- Do stuff only if possible
+			if (resourceStockpile > 0 and requiredScienceNeeded > 0) then
+		    -- Calc variable
+		    local substractedMaterial = 0;
+
+				-- Calc the era boost multipler
+				local eraBoostMultiplier = NITER_AI_BOOST_RATIO_BASE_MULTIPLIER + getBoostIncrementedValue(NITER_AI_MIN_ERA_INDEX, NITER_AI_BOOST_RATIO_INCREMENT_PER_ERA);
+
+
+		    -- In case we have more niter that it would cost, complete it!
+		    -- And save some precious niter
+		    if requiredScienceNeeded <= scaleWithGameSpeed(resourceStockpile * eraBoostMultiplier) then
+					OnAddToResearch(nil, {
+		        playerId = playerId,
+		        amount = requiredScienceNeeded
+		      });
+
+		      -- Subtract amount
+		      substractedMaterial = requiredScienceNeeded;
+		    else
+		      -- The AI will want to keep its threshold
+	        local thresholdedAIResourceStock = resourceStockpile - NITER_AI_THESHOLD;
+
+	        -- AI Boost logging
+	        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
+
+	        -- Thresholded AI resource stock
+	        resourceStockpile = thresholdedAIResourceStock;
+
+					-- Game-event callback to add science, substract resource equal to production-cost
+					OnAddToResearch(nil, {
+		        playerId = playerId,
+		        amount = scaleWithGameSpeed(resourceStockpile * eraBoostMultiplier)
+		      });
+
+		      -- Subtract amount
+		      substractedMaterial = resourceStockpile;
+		    end
+
+				-- Game-event callback to change resource-count on player
+				OnChangeResourceAmount(nil, {
+		      playerId = playerId,
+		      resourceIndex = GameInfo.Resources["RESOURCE_NITER"].Index,
+		      amount = -substractedMaterial
+		    });
+
+				-- Logging to make clear what the AI is getting
+	      local AIPlayerConfiguration = PlayerConfigurations[playerId];
+	      WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted his science!");
+			end
+		end
 	end
 end
 
 -- AIs will also get a boost if they can afford it
-function TakeAIActionsForNiterBoost()
-  WriteToLog("AIs science boosting begun!");
+function TakeAIActionsForHorsesBoost(playerAI)
+	-- Boost, but only with real player
+	if playerAI ~= nil then
+		local playerId = playerAI:GetID();
 
-  -- Get alive players (only major civs)
-	local players = Game.GetPlayers{Alive = true, Major = true};
+		-- Logging ya know
+	  WriteToLog("AIs culture boosting begun for player: "..playerId);
 
-	-- Player is real?
-	for _, player in ipairs(players) do
-    -- Is the player an AI?
-    if isAI(player) then
-      -- Is boosting possible for this player?
-      if ExposedMembers.SAUM_Niter_IsPlayerResearching(player:GetID()) and ExposedMembers.SAUM_Niter_IsBoostWithNiterPossible(player:GetID()) then
-				-- But only with real player
-			  if player ~= nil then
-			    local playerId = player:GetID();
+	  -- Is boosting possible for this player?
+	  if ExposedMembers.SAUM_Niter_IsPlayerDevelopingCulture(playerId) and ExposedMembers.SAUM_Niter_IsBoostWithHorsesPossible(playerId) then
+	    -- Fetch the stockpile of the player, and the current production state
+	    local resourceStockpile = getStrategicResourceStockpileOfPlayer(playerAI, "RESOURCE_HORSES");
+	    local requiredCultureNeeded = ExposedMembers.SAUM_Niter_GetCultureAmountNeededForCompletion(playerId);
 
-			    -- Fetch the stockpile of the player, and the current production state
-			    local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_NITER");
-			    local requiredScienceNeeded = ExposedMembers.SAUM_Niter_GetScienceAmountNeededForCompletion(playerId);
+			-- Do stuff only if possible
+			if (resourceStockpile > 0 and requiredCultureNeeded > 0) then
+		    -- Calc variable
+		    local substractedMaterial = 0;
 
-			    -- Calc variable
-			    local substractedMaterial = 0;
+				-- Calc the era boost multipler
+				local eraBoostMultiplier = HORSES_AI_BOOST_RATIO_BASE_MULTIPLIER + getBoostIncrementedValue(HORSES_AI_MIN_ERA_INDEX, HORSES_AI_BOOST_RATIO_INCREMENT_PER_ERA);
 
-			    -- In case we have more niter that it would cost, complete it!
-			    -- And save some precious niter
-			    if requiredScienceNeeded <= scaleWithGameSpeed(resourceStockpile) then
-						OnAddToResearch(Game.GetLocalPlayer(), {
-			        playerId = playerId,
-			        amount = requiredScienceNeeded
-			      });
+		    -- In case we have more horses that it would cost, complete it!
+		    -- And save some precious horses
+		    if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile * eraBoostMultiplier) then
+		      -- Game-event callback to add civic, substract resource equal to production-cost
+					OnAddToCivic(nil, {
+		        OnStart = "AddToCivic",
+		        playerId = playerId,
+		        amount = requiredCultureNeeded
+		      });
 
-			      -- Subtract amount
-			      substractedMaterial = requiredScienceNeeded;
-			    else
-			      -- The AI will want to keep its threshold
-		        local thresholdedAIResourceStock = resourceStockpile - NITER_AI_THESHOLD;
+		      -- Subtract amount
+		      substractedMaterial = requiredCultureNeeded;
+		    else
+	        local thresholdedAIResourceStock = resourceStockpile - HORSES_AI_THESHOLD;
 
-		        -- AI Boost logging
-		        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
+	        -- AI Boost logging
+	        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
 
-		        -- Thresholded AI resource stock
-		        resourceStockpile = thresholdedAIResourceStock;
+	        -- Thresholded AI resource stock
+	        resourceStockpile = thresholdedAIResourceStock;
 
-						-- Game-event callback to add science, substract resource equal to production-cost
-						OnAddToResearch(Game.GetLocalPlayer(), {
-			        playerId = playerId,
-			        amount = scaleWithGameSpeed(resourceStockpile)
-			      });
+		      -- Game-event callback to add culture, substract resource equal to production-cost
+					OnAddToCivic(nil, {
+		        OnStart = "AddToCivic",
+		        playerId = playerId,
+		        amount = scaleWithGameSpeed(resourceStockpile * eraBoostMultiplier)
+		      });
 
-			      -- Subtract amount
-			      substractedMaterial = resourceStockpile;
-			    end
+		      -- Subtract amount
+		      substractedMaterial = resourceStockpile;
+		    end
 
-					-- Game-event callback to change resource-count on player
-  				OnChangeResourceAmount(Game.GetLocalPlayer(), {
-			      playerId = playerId,
-			      resourceIndex = GameInfo.Resources["RESOURCE_NITER"].Index,
-			      amount = -substractedMaterial
-			    });
+				-- Game-event callback to change resource-count on player
+				OnChangeResourceAmount(nil, {
+		      playerId = playerId,
+		      resourceIndex = GameInfo.Resources["RESOURCE_HORSES"].Index,
+		      amount = -substractedMaterial
+		    });
 
-					-- Logging to make clear what the AI is getting
-	        local AIPlayerConfiguration = PlayerConfigurations[player:GetID()];
-	        WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted his science!");
-	  		end
-      end
-    end
-	end
-end
-
--- AIs will also get a boost if they can afford it
-function TakeAIActionsForHorsesBoost()
-  WriteToLog("AIs culture boosting begun!");
-
-  -- Get alive players (only major civs)
-	local players = Game.GetPlayers{Alive = true, Major = true};
-
-	-- Player is real?
-	for _, player in ipairs(players) do
-    -- Is the player an AI?
-    if isAI(player) then
-      -- Is boosting possible for this player?
-      if ExposedMembers.SAUM_Niter_IsPlayerDevelopingCulture(player:GetID()) and ExposedMembers.SAUM_Niter_IsBoostWithHorsesPossible(player:GetID()) then
-				-- Boost, but only with real player
-			  if player ~= nil then
-			    local playerId = player:GetID();
-			    local localPlayer = Game.GetLocalPlayer();
-
-			    -- Fetch the stockpile of the player, and the current production state
-			    local resourceStockpile = getStrategicResourceStockpileOfPlayer(player, "RESOURCE_HORSES");
-			    local requiredCultureNeeded = ExposedMembers.SAUM_Niter_GetCultureAmountNeededForCompletion(playerId);
-
-			    -- Calc variable
-			    local substractedMaterial = 0;
-
-			    -- In case we have more horses that it would cost, complete it!
-			    -- And save some precious horses
-			    if requiredCultureNeeded <= scaleWithGameSpeed(resourceStockpile) then
-			      -- Game-event callback to add civic, substract resource equal to production-cost
-						OnAddToCivic(localPlayer, {
-			        OnStart = "AddToCivic",
-			        playerId = playerId,
-			        amount = requiredCultureNeeded
-			      });
-
-			      -- Subtract amount
-			      substractedMaterial = requiredCultureNeeded;
-			    else
-		        local thresholdedAIResourceStock = resourceStockpile - HORSES_AI_THESHOLD;
-
-		        -- AI Boost logging
-		        WriteToLog("BOOST is AI threshold-safe!: "..resourceStockpile.." -> "..thresholdedAIResourceStock);
-
-		        -- Thresholded AI resource stock
-		        resourceStockpile = thresholdedAIResourceStock;
-
-			      -- Game-event callback to add culture, substract resource equal to production-cost
-						OnAddToCivic(localPlayer, {
-			        OnStart = "AddToCivic",
-			        playerId = playerId,
-			        amount = scaleWithGameSpeed(resourceStockpile)
-			      });
-
-			      -- Subtract amount
-			      substractedMaterial = resourceStockpile;
-			    end
-
-					-- Game-event callback to change resource-count on player
-					OnChangeResourceAmount(localPlayer, {
-			      playerId = playerId,
-			      resourceIndex = GameInfo.Resources["RESOURCE_HORSES"].Index,
-			      amount = -substractedMaterial
-			    });
-
-					-- Logging to make clear what the AI is getting
-	        local AIPlayerConfiguration = PlayerConfigurations[player:GetID()];
-	        WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted his culture!");
-			  end
-      end
-    end
-	end
+				-- Logging to make clear what the AI is getting
+	      local AIPlayerConfiguration = PlayerConfigurations[playerId];
+	      WriteToLog("AI ("..AIPlayerConfiguration:GetLeaderName()..") boosted his culture!");
+		  end
+	  end
+  end
 end
 
 -- Thinigs that happen when the turn starts
-function OnTurnBegin()
-	-- Its AIs turn to boost baby!
-	TakeAIActionsForIronBoost();
-	TakeAIActionsForNiterBoost();
-	TakeAIActionsForHorsesBoost();
+function OnPlayerTurnActivated(playerId, firstActivation)
+	if firstActivation then
+		-- Get the player
+		local player = Players[playerId];
+
+		-- Is the player an AI?
+	  if isAI(player) then
+			-- Its AIs turn to boost baby!
+			TakeAIActionsForIronBoost(player);
+			TakeAIActionsForNiterBoost(player);
+			TakeAIActionsForHorsesBoost(player);
+		end
+	end
 end
 
 -- Main function for initialization
 function Initialize()
-	-- Turn begins
-  Events.TurnBegin.Add(OnTurnBegin);
+	-- Trigger on player turn activation
+	Events.PlayerTurnActivated.Add(OnPlayerTurnActivated);
 
 	-- Communication uplink to our context-sister! HELLO WORLD!
 	GameEvents.ChangeResourceAmount.Add(OnChangeResourceAmount);

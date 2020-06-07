@@ -13,6 +13,8 @@ local MIN_AMOUNT_FOR_BOOST = 25; -- Amount of iron that is required before the b
 local MIN_ERA_INDEX = 4;         -- After reaching the "Renaissance"-era the button shows up (4)
 local AI_THESHOLD = 10;          -- This amount the AI never uses for boosting
 local AI_ADD_ERA = 0;            -- This many era later the uses this boosting
+local BOOST_RATIO_INCREMENT_PER_ERA = 0.35;  -- Additional multipler based on 1:1
+local BOOST_RATIO_BASE_MULTIPLIER = 1.15;      -- Base multipler for the hardcoded 1:1 ratio
 local RESOURCE_ID_IRON = 43;
 
 -- Mirrored in ProductionPanel
@@ -53,17 +55,17 @@ function createIronMaterialBoostButton()
     local requiredProductionNeeded = getProductionAmountNeededForCompletion(selectedCity:GetOwner(), selectedCity:GetID());
 
     -- Do some very complex math...
-    if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile) then
-      ironAmountToConsume = requiredProductionNeeded;
+    if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()) then
+      ironAmountToConsume = (requiredProductionNeeded / scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())) * resourceStockpile;
       productionToBeCompleted = requiredProductionNeeded;
     else
       ironAmountToConsume = resourceStockpile;
-      productionToBeCompleted = resourceStockpile;
+      productionToBeCompleted = scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier());
     end
     -- ...done
 
     -- Set our tooltip
-    tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP", math.ceil(ironAmountToConsume), scaleWithGameSpeed(productionToBeCompleted));
+    tooltip = Locale.Lookup("LOC_STILLAUSEFULMATERIAL_IRON_UNBOOSTED_TOOLTIP", math.ceil(ironAmountToConsume), roundNumber(productionToBeCompleted, 0));
   end
 
   -- Set the disabled state
@@ -222,7 +224,7 @@ function boostProductionInCityWithIron(ownerId, cityId)
 
     -- In case we have more iron that it would cost, complete it!
     -- And save some precious iron
-    if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile) then
+    if requiredProductionNeeded <= scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()) then
       -- Game-event callback to add production, substract resource equal to production-cost
     	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "CompleteProduction",
@@ -231,18 +233,24 @@ function boostProductionInCityWithIron(ownerId, cityId)
       });
 
       -- Subtract amount
-      substractedMaterial = requiredProductionNeeded;
+      substractedMaterial = math.ceil((requiredProductionNeeded / scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())) * resourceStockpile);
+
+      -- Logging logging logging
+      WriteToLog("FINISHed production with: "..substractedMaterial.." / "..requiredProductionNeeded);
     else
     	-- Game-event callback to add production, substract resource equal to production-cost
     	UI.RequestPlayerOperation(Game.GetLocalPlayer(), PlayerOperations.EXECUTE_SCRIPT, {
         OnStart = "AddToProduction",
         ownerId = ownerId,
         cityId = cityId,
-        amount = scaleWithGameSpeed(resourceStockpile)
+        amount = scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier())
       });
 
       -- Subtract amount
       substractedMaterial = resourceStockpile;
+
+      -- Logging logging logging
+      WriteToLog("BOOSTed production with: "..substractedMaterial.." / "..scaleWithGameSpeed(resourceStockpile * getEraIncrementModifier()));
     end
 
     -- Game-event callback to change resource-count on player
@@ -252,13 +260,14 @@ function boostProductionInCityWithIron(ownerId, cityId)
       resourceIndex = GameInfo.Resources["RESOURCE_IRON"].Index,
       amount = -substractedMaterial
     });
-
-    -- Logging logging logging
-    WriteToLog("BOOSTed production in city: "..city:GetID().." with iron cost: "..substractedMaterial);
   else
     -- Also here we do our logging :)
     WriteToLog("BOOST not possible, no city selected!");
   end
+end
+
+function getEraIncrementModifier()
+  return BOOST_RATIO_BASE_MULTIPLIER + getBoostIncrementedValue(MIN_ERA_INDEX, BOOST_RATIO_INCREMENT_PER_ERA);
 end
 
 -- Tabs get changed on the production-panel
@@ -349,7 +358,7 @@ function OnLocalPlayerTurnBegin()
   if notifyIfReady and isBoostWithIronPossible(localPlayer:GetID()) then
     -- Send notification
     notify(
-      localPlayer,
+      localPlayer:GetID(),
       Locale.Lookup("LOC_SAUM_BOOST_READY_HEADLINE"),
       Locale.Lookup("LOC_SAUM_BOOST_READY_CONTENT")
     );
@@ -384,6 +393,7 @@ end
 -- Initialization stuffs
 function Initialize()
   -- Exposed member callbacks
+  ExposedMembers.SAUM_Iron_IsCityOccupied = isCityOccupied;
   ExposedMembers.SAUM_Iron_IsCityProducing = isCityProducing;
   ExposedMembers.SAUM_Iron_IsBoostWithIronPossible = isBoostWithIronPossible;
   ExposedMembers.SAUM_Iron_GetProductionAmountNeededForCompletion = getProductionAmountNeededForCompletion;

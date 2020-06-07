@@ -5,16 +5,44 @@
 -- Debugging mode switch
 local debugMode = true;
 
-function notify(localPlayer, headline, content)
+function notify(playerId, headline, content)
+  local player = Players[playerId];
+
   -- Fetch the notified players capital
-  local localPlayerCapital = localPlayer:GetCities():GetCapitalCity();
+  local playerCapital = player:GetCities():GetCapitalCity();
 
   -- Get the notification headline from locales
   local notificationHeadline = Locale.Lookup(headline);
   local notificationContent = Locale.Lookup(content);
 
   -- The actual notification we send out
-  NotificationManager.SendNotification(localPlayer:GetID(), 95, notificationHeadline, notificationContent, localPlayerCapital:GetX(), localPlayerCapital:GetY());
+  NotificationManager.SendNotification(playerId, 95, notificationHeadline, notificationContent, playerCapital:GetX(), playerCapital:GetY());
+end
+
+function getBoostIncrementedValue(minEra, incrementValue)
+  if Game.GetEras ~= nil then
+    -- Get era data of the game
+		local gameEras = Game.GetEras();
+		local currentGameEra = GameInfo.Eras[gameEras:GetCurrentEra()].ChronologyIndex;
+
+    -- Default if era is not advanced
+    if minEra >= currentGameEra then
+      return 1;
+    end
+
+    -- Calculate
+    return ((currentGameEra - minEra) * incrementValue);
+  end
+
+  return 1;
+end
+
+function isCityOccupied(ownerId, cityId)
+  -- Fetch the city
+  local city = CityManager.GetCity(ownerId, cityId);
+
+  -- Get the occupation-status
+  return city:IsOccupied();
 end
 
 -- Helper to check if a city is currently producing something
@@ -174,13 +202,23 @@ end
 
 -- Helper to check if the player mets an era
 function hasRequiredEra(player, era)
-  local pEra = GameInfo.Eras[player:GetEra()];
-  return (pEra.ChronologyIndex >= era);
+  local pEraIndex = getPlayerEraIndex(player:GetID());
+  return (pEraIndex >= era);
+end
+
+-- Helper to get current player era
+function getPlayerEraIndex(playerId)
+  local player = Players[playerId];
+  return GameInfo.Eras[player:GetEra()].ChronologyIndex;
 end
 
 -- Checks if the player is an AI civ
 function isAI(player)
-  return (player ~= nil and not player:IsHuman() and not player:IsBarbarian());
+  if player == nil then
+    return false
+  end
+
+  return (not player:IsHuman() and not player:IsBarbarian() and player:IsMajor() and player:IsAlive());
 end
 
 -- Get the game-speed multipler for scaling purpose
